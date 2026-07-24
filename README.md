@@ -1,4 +1,4 @@
-# swang-stodva
+# Swang Stodva
 
 **Open-source Bafang display firmware for the SW102 handlebar display.**
 
@@ -10,7 +10,7 @@
 > This firmware is in **early alpha**: under active development and only
 > lightly tested on real hardware, with known rough edges (see below). Expect
 > bugs and breaking changes — **don't rely on it for a bike you depend on.**
-
+k
 This is a fork of [anszom/SW102_LCD](https://github.com/anszom/SW102_LCD),
 ported from the **TSDZ2** motor's UART protocol to the **Bafang** display
 UART protocol used by BBS02 / BBSHD mid-drive motors. It runs on the
