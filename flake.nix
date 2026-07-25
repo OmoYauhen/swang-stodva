@@ -1,6 +1,13 @@
 {
   description = "swang-stodva — open-source Bafang display firmware for the SW102";
 
+  # Usage:
+  #   nix run   .#emu        build & run the terminal emulator (Rust + ratatui)
+  #   nix build .#emu        emulator binary  -> result/bin/swang-stodva-emu
+  #   nix build .#firmware   on-target image  -> result/nrf51822_sw102.hex (+ .map)
+  #   nix develop            dev shell (rustc/cargo + arm-none-eabi toolchain + python3)
+  # See docs/BUILD.md for flashing, the OTA/release flow, and the motor mock.
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -14,28 +21,17 @@
         # common/Makefile.common (VERSION_STRING), managed by the release workflow.
         version = "0.0.1-alpha";
 
-        # Desktop Qt5 emulator (Makefile.emu -> ./emu).
-        emu = pkgs.stdenv.mkDerivation {
+        # Terminal (ratatui) emulator — the Rust crate in emu-rs/, whose build.rs
+        # compiles the firmware C via the cc crate. src is the whole repo so
+        # build.rs can reach ../common, ../src, ../include, ../assets.
+        emu = pkgs.rustPlatform.buildRustPackage {
           pname = "swang-stodva-emu";
           inherit version;
           src = ./.;
-          nativeBuildInputs = [ pkgs.pkg-config pkgs.qt5.wrapQtAppsHook ];
-          buildInputs = [ pkgs.qt5.qtbase pkgs.qt5.qtserialport ];
-          # qtserialport's .pc only exposes the QtSerialPort/ subdir; the header
-          # pulls in <QtSerialPort/...> which needs the parent dir (see shell.nix).
-          CFLAGS = "-I${pkgs.qt5.qtserialport.dev}/include";
-          CXXFLAGS = "-I${pkgs.qt5.qtserialport.dev}/include";
-          enableParallelBuilding = true;
-          buildPhase = ''
-            runHook preBuild
-            make -f Makefile.emu
-            runHook postBuild
-          '';
-          installPhase = ''
-            runHook preInstall
-            install -Dm755 emu $out/bin/swang-stodva-emu
-            runHook postInstall
-          '';
+          cargoRoot = "emu-rs"; # Cargo.lock / vendoring live in the subdir
+          buildAndTestSubdir = "emu-rs";
+          cargoLock.lockFile = ./emu-rs/Cargo.lock;
+          doCheck = false; # no tests; the binary is an interactive TUI
           meta.mainProgram = "swang-stodva-emu";
         };
 

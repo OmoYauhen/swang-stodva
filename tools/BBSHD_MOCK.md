@@ -2,9 +2,9 @@
 
 `bbshd_mock.py` is a Python script that emulates a Bafang BBSHD motor
 controller speaking the Bafang display UART protocol. Together with the
-`SW102_UART_PORT` env-var override in `src/emu/uart.cpp`, it lets you run
-the SW102 firmware emulator against a synthetic BBSHD entirely on your
-desktop — no motor, no display, no cable.
+emulator's `--motor-port` flag, it lets you run the SW102 firmware emulator
+against a synthetic BBSHD entirely on your desktop — no motor, no display, no
+cable.
 
 Reference implementation: `bbs-fw` (`src/firmware/extcom.c`) from
 <https://github.com/danielnilsson9/bbs-fw>.
@@ -22,7 +22,7 @@ It prints the pty slave device it created, e.g. `/dev/pts/5`.
 Terminal 2 — run the emulator pointed at that path:
 
 ```
-SW102_UART_PORT=/dev/pts/5 ./emu
+cd emu-rs && cargo run -- --motor-port=/dev/pts/5
 ```
 
 Options:
