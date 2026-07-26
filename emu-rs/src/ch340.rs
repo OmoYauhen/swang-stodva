@@ -58,6 +58,12 @@ mod imp {
 
     /// Wrap an already-open USB fd (Android `termux-usb`).
     pub fn open_fd(fd: i32, baud: u32) -> Result<(), String> {
+        // Android sandboxes /dev/bus/usb, so libusb's device scan inside
+        // libusb_init() fails ("Input/Output Error"). Disable discovery before
+        // creating the context — we don't need it, we just wrap the fd that
+        // termux-usb already opened for us. Must be set before Context::new().
+        rusb::disable_device_discovery()
+            .map_err(|e| format!("libusb disable-discovery: {e}"))?;
         let ctx = Context::new().map_err(|e| format!("libusb init: {e}"))?;
         // SAFETY: `fd` must be an open USB device fd owned by us (termux-usb
         // hands it over for the lifetime of the process). libusb takes over I/O
