@@ -218,9 +218,14 @@ cd swang-stodva/emu-rs
 cargo build --release --features usb
 
 termux-usb -l                                      # find the adapter, e.g. /dev/bus/usb/001/002
-# run the emu with the granted fd (termux-usb passes it as $1):
-termux-usb -r -e 'sh -c "./target/release/swang-stodva-emu --motor-fd=$1"' /dev/bus/usb/001/002
+# termux-usb runs the program with the opened fd as its argument; the emulator
+# accepts a bare fd, so no wrapper script is needed:
+termux-usb -r -e ./target/release/swang-stodva-emu /dev/bus/usb/001/002
 ```
+
+(`termux-usb` splits `-e` on spaces and ignores quotes, so an inline
+`sh -c "… --motor-fd=$1"` fails with "Unterminated quoted string" — pass the
+binary directly, or a single wrapper-script path.)
 
 Wire the adapter to the motor's display port: adapter **TX → motor RX**, **RX →
 motor TX**, **GND ↔ GND**; leave the 5 V display-power wire disconnected. The
