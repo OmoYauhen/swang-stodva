@@ -30,7 +30,7 @@ Features:
 - writes assist level (PAS), lights, and walk-assist state back to the motor
 - built-in support for `bbs-fw`'s field hijacks (motor temperature via `READ_RANGE`, battery voltage ×10 via `READ_CALORIES`)
 - new UI with smooth graphics, graphs, and 50 fps update rate
-- desktop emulator build for developing without hardware — see [`docs/BUILD.md`](docs/BUILD.md)
+- terminal emulator (Rust + ratatui) for developing without hardware — see [`docs/BUILD.md`](docs/BUILD.md)
 - assist level defined as percentage (100 % = motor matches rider power)
 
 Known issues / rough edges:
@@ -55,8 +55,8 @@ and flash the bootloader. Afterwards you can switch to this version using the
 procedure described above.
 
 To build from source, see [docs/BUILD.md](docs/BUILD.md)
-for instructions (Nix + `nix build` for reproducible builds, or system Qt5 for
-Debian/Ubuntu/Fedora/macOS).
+for instructions (Nix + `nix build`/`nix run` for reproducible builds, or a
+system Rust + `arm-none-eabi` toolchain).
 
 ## Usage
 
@@ -129,28 +129,26 @@ The "backend" changes concentrate in `common/src/state.c` and
 The UI, screen framework, and blitting code are inherited from
 `anszom/SW102_LCD` unchanged.
 
-### Emulator build
+### Emulator
 
-The firmware supports an "emulator" build, where it's compiled as a regular
-Linux app driving a Qt5 window. This allows for a much quicker development
-cycle.
+A terminal emulator ([`emu-rs/`](emu-rs), Rust + ratatui) compiles the real
+firmware C and runs it on the desktop — rendering the OLED to the terminal and
+bridging the motor UART to a pty — for a much quicker development cycle.
 
 ```
-nix-shell
-make -f Makefile.emu
-./emu
+nix run .#emu           # or: cd emu-rs && cargo run
 ```
 
-For desktop development without a real motor, use the included BBSHD
-motor emulator (Python 3, no dependencies):
+For development without a real motor, use the included BBSHD motor emulator
+(Python 3, no dependencies):
 
 ```
 python3 -u tools/bbshd_mock.py --verbose --speed 20 --batt 60
 # prints e.g. "Slave device: /dev/pts/N"
 
 # in another shell:
-SW102_UART_PORT=/dev/pts/N ./emu
+cd emu-rs && cargo run -- --motor-port=/dev/pts/N
 ```
 
-See [`tools/BBSHD_MOCK.md`](tools/BBSHD_MOCK.md)
-for the mock's protocol coverage and options.
+See [`docs/BUILD.md`](docs/BUILD.md) for controls/headless mode and
+[`tools/BBSHD_MOCK.md`](tools/BBSHD_MOCK.md) for the mock's protocol coverage.

@@ -30,7 +30,7 @@ entry points give the same environment.
 
 ## Building the on-target firmware
 
-The `Makefile` (as opposed to `Makefile.emu`) cross-compiles the firmware
+The `Makefile` cross-compiles the firmware
 for the SW102's nRF51x22 (Cortex-M0) and produces `_build/nrf51822_sw102.hex`,
 suitable for flashing via SWD (ST-Link + OpenOCD) or for wrapping into a
 signed OTA DFU zip.
@@ -152,66 +152,59 @@ Current version: `0.0.1-alpha`. The workflow uses the default `GITHUB_TOKEN`
 (`contents: write`) and pushes the bump commit to `main`, so `main` must be
 unprotected (or swap in a PAT).
 
-## Running the desktop emulator
+## Running the terminal emulator
 
-`Makefile.emu` builds the firmware as a native Linux/Qt5 application so you
-can develop the state machine, UI, and protocol code without flashing the
-SW102. See `../src/emu/` for the hardware-abstraction shims that
-replace the nRF51 peripherals.
+The emulator is a Rust/[ratatui](https://ratatui.rs) crate in
+[`emu-rs/`](../emu-rs) that **compiles the real firmware C** (UI, screens,
+state machine, Bafang protocol) via a `build.rs` and drives it: it renders the
+64×128 OLED framebuffer to the terminal (Unicode braille), maps keys to the
+four buttons, and bridges the motor UART to a pty/serial port. This lets you
+develop the UI and protocol code without flashing the SW102. The desktop HAL
+shims that replace the nRF51 peripherals live in `emu-rs/csrc/` and `src/emu/`.
 
-### With Nix (recommended, one-shot)
-
-From the repo root:
+### With Nix
 
 ```
-nix-shell
-make -f Makefile.emu
-./emu
+nix run .#emu            # build + run
+# or a dev shell:
+nix develop              # brings in cargo, rustc, gcc, python3 (+ arm toolchain)
+cd emu-rs && cargo run
 ```
-
-`shell.nix` here brings in Qt5 (base + serialport + wayland platform
-plugin), gcc, make, pkg-config, and python3 for the mock. Works on any
-machine that has Nix installed — NixOS, Nix on macOS, Nix on any Linux.
 
 ### Without Nix
 
-Install these system packages, then run `make -f Makefile.emu`:
+Needs a Rust toolchain (`rustc` + `cargo`, e.g. via rustup) and a C compiler:
 
-- Debian/Ubuntu: `qtbase5-dev qtbase5-dev-tools libqt5serialport5-dev pkg-config build-essential python3`
-- Fedora: `qt5-qtbase-devel qt5-qtserialport-devel pkgconfig gcc-c++ python3`
-- macOS + Homebrew: `qt@5 pkg-config python3`
+```
+cd emu-rs
+cargo run
+```
 
-Set `QT_QPA_PLATFORM=xcb` (X11) or `wayland` if Qt doesn't pick your session
-type automatically.
+### Motor
 
-### Motor UART
+Three ways to feed the emulator motor data:
 
-The emulator opens a serial port at 1200 baud (Bafang display UART).
-Two ways to connect:
+1. **Built-in BBSHD (default).** With no `--motor-port`, the emulator emulates a
+   BBSHD in-process and shows a **BBSHD motor** panel to the right of the display
+   with its live state (PAS, lights, speed, battery, moving, temp, current). Set
+   the initial speed/voltage with `EMU_MOTOR_SPEED` (km/h) and `EMU_MOTOR_BATTERY`
+   (volts), e.g. `EMU_MOTOR_SPEED=18 cargo run`.
 
-1. **Real motor.** Plug a Bafang programming cable into your motor and
-   your PC. The emu auto-scans `/dev/ttyUSB*` and grabs the first match.
+2. **Real motor.** Plug a Bafang programming cable into your motor and your PC:
+   `cargo run -- --motor-port=/dev/ttyUSB0`.
 
-2. **Mock motor (recommended for development).** Run the Python BBSHD
-   emulator in `tools/bbshd_mock.py`, then point the emu at its pty:
+3. **External Python mock.** Run `tools/bbshd_mock.py` and point the emu at its
+   pty (`--motor-port=/dev/pts/N`). See `tools/BBSHD_MOCK.md` for its options.
 
-   ```
-   python3 -u tools/bbshd_mock.py --verbose --speed 18 --batt 78
-   # prints e.g. "Slave device: /dev/pts/5"
+### Controls & extras
 
-   SW102_UART_PORT=/dev/pts/5 ./emu
-   ```
-
-   See `tools/BBSHD_MOCK.md` for full options and protocol coverage.
-
-### What the emulator prints
-
-- Every frame of the OLED is saved as `out/NNNN.pgm` (create the `out/`
-  directory first if it doesn't exist). Handy for regression tests.
-- Buttons on the SW102 are mapped to keys inside the emulator window:
-  - `↑ / ↓` — UP / DOWN
-  - `M` — mode/menu
-  - `P` — power
+- Display keys: `↑ / ↓` assist · `Enter` (or `m`) menu · `Esc` (or `p`) power ·
+  `Ctrl-C` quit. The bottom border shows the motor-connection dot; the button
+  chips highlight while held.
+- Built-in motor keys: `←` / `→` change speed, `-` / `+` change battery voltage.
+  At 0 km/h the motor reports not-moving.
+- `EMU_HEADLESS=1` runs without a terminal (ticks for `EMU_HEADLESS_MS`, default
+  4000, then dumps the framebuffer as ASCII) — handy for CI / scripted checks.
 
 ## Debugging bluetooth linux
 
