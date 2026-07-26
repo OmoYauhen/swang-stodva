@@ -426,6 +426,11 @@ fn parse_args() -> Backend {
         } else if a == "-h" || a == "--help" {
             print_help();
             std::process::exit(0);
+        } else if let Ok(fd) = a.parse::<i32>() {
+            // A bare number = a USB fd. termux-usb runs `-e <prog> <device>` by
+            // calling <prog> with the opened fd as its argument, so passing the
+            // emulator directly (no wrapper) lands the fd here.
+            backend = Backend::UsbFd(fd);
         } else {
             eprintln!("swang-stodva-emu: unknown argument '{a}' (try --help)");
             std::process::exit(2);
@@ -443,6 +448,8 @@ fn print_help() {
          --motor-port=PATH   UART device: pty or kernel serial (/dev/ttyUSB0)\n  \
          --motor-fd=N        userspace CH340 over an open USB fd{usb};\n                      \
              for Android/termux-usb (no root, no /dev/ttyUSB)\n  \
+         N                   a bare number is also treated as a USB fd, so\n                      \
+             `termux-usb -e <prog> <dev>` works with no wrapper\n  \
          --motor-usb         userspace CH340 by VID:PID 1a86:7523{usb}\n\n\
          Other:\n  \
          -h, --help          show this help"
