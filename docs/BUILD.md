@@ -196,6 +196,38 @@ Three ways to feed the emulator motor data:
 3. **External Python mock.** Run `tools/bbshd_mock.py` and point the emu at its
    pty (`--motor-port=/dev/pts/N`). See `tools/BBSHD_MOCK.md` for its options.
 
+4. **Userspace CH340 (Android / no `/dev/ttyUSB`).** With `--features usb`, the
+   emu can drive a CH340 adapter (`1a86:7523`) itself via libusb — no kernel
+   `ch341-uart` driver, no `/dev/ttyUSB*` node. This is what makes it run on an
+   Android phone with no root (see below). On desktop Linux you can exercise the
+   same path with `--motor-usb` (opens the adapter by VID:PID; needs root or a
+   udev rule since the raw USB node is root-only).
+
+### On Android (Termux, no root)
+
+The Bafang UART is only 1200 baud, so a phone + USB-C OTG + CH340 adapter is
+enough. Android won't expose a `/dev/ttyUSB*`, so the emu talks to the adapter
+in userspace over a file descriptor handed to it by `termux-usb` (which drives
+the Android USB-host permission dialog — the same mechanism commercial Bafang
+apps use).
+
+```
+pkg install rust clang git libusb termux-api      # + install the Termux:API app
+git clone https://github.com/OmoYauhen/swang-stodva
+cd swang-stodva/emu-rs
+cargo build --release --features usb
+
+termux-usb -l                                      # find the adapter, e.g. /dev/bus/usb/001/002
+# run the emu with the granted fd (termux-usb passes it as $1):
+termux-usb -r -e 'sh -c "./target/release/swang-stodva-emu --motor-fd=$1"' /dev/bus/usb/001/002
+```
+
+Wire the adapter to the motor's display port: adapter **TX → motor RX**, **RX →
+motor TX**, **GND ↔ GND**; leave the 5 V display-power wire disconnected. The
+CH340's data lines must tolerate the Bafang port's 5 V logic (use a 5 V adapter
+or a level shifter). The motor must be powered on. Test with the rear wheel off
+the ground — the emu applies real PAS/lights to the motor.
+
 ### Controls & extras
 
 - Display keys: `↑ / ↓` assist · `Enter` (or `m`) menu · `Esc` (or `p`) power ·

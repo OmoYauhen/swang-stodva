@@ -7,6 +7,7 @@
 //! the firmware's motor UART is served either by the built-in BBSHD emulation
 //! (motor.rs, default) or a real pty/serial port (serial.rs, --motor-port).
 
+mod ch340;
 mod motor;
 mod serial;
 
@@ -380,37 +381,76 @@ fn run_headless() {
     }
 }
 
-fn parse_motor_port() -> Option<String> {
-    let mut port = None;
+// How the emulator was told to source motor data.
+enum Backend {
+    BuiltIn,      // no flag: in-process BBSHD
+    Port(String), // --motor-port=PATH: kernel pty/serial device
+    UsbFd(i32),   // --motor-fd=N: userspace CH340 over a termux-usb fd (Android)
+    UsbFirst,     // --motor-usb: userspace CH340 by VID:PID (desktop testing)
+}
+
+fn parse_args() -> Backend {
+    let mut backend = Backend::BuiltIn;
     let mut args = std::env::args().skip(1);
     while let Some(a) = args.next() {
         if let Some(v) = a.strip_prefix("--motor-port=") {
-            port = Some(v.to_string());
+            backend = Backend::Port(v.to_string());
         } else if a == "--motor-port" {
-            port = args.next();
+            backend = args.next().map(Backend::Port).unwrap_or(Backend::BuiltIn);
+        } else if let Some(v) = a.strip_prefix("--motor-fd=") {
+            match v.parse() {
+                Ok(fd) => backend = Backend::UsbFd(fd),
+                Err(_) => {
+                    eprintln!("swang-stodva-emu: --motor-fd needs a number, got '{v}'");
+                    std::process::exit(2);
+                }
+            }
+        } else if a == "--motor-usb" {
+            backend = Backend::UsbFirst;
         } else if a == "-h" || a == "--help" {
-            println!(
-                "swang-stodva-emu — SW102 terminal emulator\n\n\
-                 Usage: swang-stodva-emu [--motor-port=PATH]\n\n\
-                 Options:\n  \
-                 --motor-port=PATH   motor UART device (pty or serial);\n                      \
-                     without it, a built-in BBSHD motor is emulated\n  \
-                 -h, --help          show this help"
-            );
+            print_help();
             std::process::exit(0);
         } else {
             eprintln!("swang-stodva-emu: unknown argument '{a}' (try --help)");
             std::process::exit(2);
         }
     }
-    port
+    backend
+}
+
+fn print_help() {
+    let usb = if ch340::AVAILABLE { "" } else { " (needs --features usb)" };
+    println!(
+        "swang-stodva-emu — SW102 terminal emulator\n\n\
+         Usage: swang-stodva-emu [MOTOR]\n\n\
+         Motor source (default: built-in BBSHD emulation):\n  \
+         --motor-port=PATH   UART device: pty or kernel serial (/dev/ttyUSB0)\n  \
+         --motor-fd=N        userspace CH340 over an open USB fd{usb};\n                      \
+             for Android/termux-usb (no root, no /dev/ttyUSB)\n  \
+         --motor-usb         userspace CH340 by VID:PID 1a86:7523{usb}\n\n\
+         Other:\n  \
+         -h, --help          show this help"
+    );
+}
+
+// Turn a ch340::open_* result into a MotorInfo, warning (not exiting) on error
+// so the emulator still starts and shows the display, just without motor data.
+fn usb_motor(res: Result<(), String>, label: String) -> MotorInfo {
+    match res {
+        Ok(()) => {
+            eprintln!("swang-stodva-emu: {label} opened @1200 baud");
+            MotorInfo { connected: true, label, builtin: false }
+        }
+        Err(e) => {
+            eprintln!("swang-stodva-emu: {e}; running blind");
+            MotorInfo { connected: false, label: "motor not connected".into(), builtin: false }
+        }
+    }
 }
 
 fn main() -> io::Result<()> {
-    // --motor-port selects a real motor over a pty/serial line; without it, the
-    // built-in BBSHD emulation drives the firmware.
-    let info = match parse_motor_port() {
-        Some(p) => {
+    let info = match parse_args() {
+        Backend::Port(p) => {
             if serial::init(&p) {
                 MotorInfo { connected: true, label: format!("connected to {p}"), builtin: false }
             } else {
@@ -418,7 +458,9 @@ fn main() -> io::Result<()> {
                 MotorInfo { connected: false, label: "motor not connected".into(), builtin: false }
             }
         }
-        None => {
+        Backend::UsbFd(fd) => usb_motor(ch340::open_fd(fd, 1200), format!("CH340 (fd {fd})")),
+        Backend::UsbFirst => usb_motor(ch340::open_first(1200), "CH340 (usb)".into()),
+        Backend::BuiltIn => {
             motor::activate();
             MotorInfo { connected: true, label: "built-in BBSHD".into(), builtin: true }
         }
