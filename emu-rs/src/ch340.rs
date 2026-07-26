@@ -19,7 +19,8 @@ pub const AVAILABLE: bool = cfg!(feature = "usb");
 #[cfg(feature = "usb")]
 mod imp {
     use std::collections::VecDeque;
-    use std::sync::Mutex;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::{Arc, Mutex, OnceLock};
     use std::time::Duration;
 
     use rusb::{Context, DeviceHandle, UsbContext};
@@ -49,12 +50,14 @@ mod imp {
 
     const CTL_TIMEOUT: Duration = Duration::from_millis(200);
 
-    struct Ch340 {
-        handle: DeviceHandle<Context>,
-        rx: VecDeque<u8>,
-    }
-
-    static CH340: Mutex<Option<Ch340>> = Mutex::new(None);
+    // The shared device handle (used for writes) and the RX byte queue filled by
+    // a background reader thread. Reading on its own thread keeps the firmware's
+    // tick/render loop from ever blocking on libusb — critical on Android, where
+    // a bulk-IN read waits for motor data that may never come and would otherwise
+    // freeze the UI before the boot screen appears.
+    static HANDLE: OnceLock<Arc<DeviceHandle<Context>>> = OnceLock::new();
+    static RX: Mutex<VecDeque<u8>> = Mutex::new(VecDeque::new());
+    static ACTIVE: AtomicBool = AtomicBool::new(false);
 
     /// Wrap an already-open USB fd (Android `termux-usb`).
     pub fn open_fd(fd: i32, baud: u32) -> Result<(), String> {
@@ -105,11 +108,30 @@ mod imp {
             .claim_interface(0)
             .map_err(|e| format!("claim interface 0: {e}"))?;
         configure(&handle, baud)?;
-        *CH340.lock().unwrap() = Some(Ch340 {
-            handle,
-            rx: VecDeque::new(),
-        });
+
+        let handle = Arc::new(handle);
+        let _ = HANDLE.set(handle.clone());
+        ACTIVE.store(true, Ordering::SeqCst);
+
+        // Background reader: block on bulk-IN here, off the main loop.
+        std::thread::spawn(move || reader_loop(handle));
         Ok(())
+    }
+
+    fn reader_loop(handle: Arc<DeviceHandle<Context>>) {
+        let mut buf = [0u8; 64];
+        while ACTIVE.load(Ordering::Relaxed) {
+            match handle.read_bulk(EP_IN, &mut buf, Duration::from_millis(200)) {
+                Ok(n) if n > 0 => {
+                    if let Ok(mut q) = RX.lock() {
+                        q.extend(&buf[..n]);
+                    }
+                }
+                Ok(_) | Err(rusb::Error::Timeout) => {}
+                Err(rusb::Error::NoDevice) => break, // unplugged
+                Err(_) => std::thread::sleep(Duration::from_millis(50)), // transient; don't spin
+            }
+        }
     }
 
     fn ctl_out(h: &DeviceHandle<Context>, req: u8, val: u16, idx: u16) -> Result<(), String> {
@@ -179,29 +201,20 @@ mod imp {
     }
 
     pub fn is_active() -> bool {
-        CH340.lock().map(|g| g.is_some()).unwrap_or(false)
+        ACTIVE.load(Ordering::SeqCst)
     }
 
     pub fn write(bytes: &[u8]) {
-        if let Ok(mut g) = CH340.lock() {
-            if let Some(c) = g.as_mut() {
-                let _ = c.handle.write_bulk(EP_OUT, bytes, Duration::from_millis(100));
-            }
+        // Writes are short and infrequent; the CH340 accepts them regardless of
+        // what's on its TX line, so this won't block the caller for long.
+        if let Some(h) = HANDLE.get() {
+            let _ = h.write_bulk(EP_OUT, bytes, Duration::from_millis(100));
         }
     }
 
     pub fn read_byte() -> Option<u8> {
-        let mut g = CH340.lock().ok()?;
-        let c = g.as_mut()?;
-        if c.rx.is_empty() {
-            // Pull a chunk; a short timeout keeps the tick loop responsive when
-            // the motor is quiet (rusb returns Timeout, which we treat as idle).
-            let mut buf = [0u8; 64];
-            if let Ok(n) = c.handle.read_bulk(EP_IN, &mut buf, Duration::from_millis(5)) {
-                c.rx.extend(&buf[..n]);
-            }
-        }
-        c.rx.pop_front()
+        // Non-blocking: just drain what the reader thread has queued.
+        RX.lock().ok().and_then(|mut q| q.pop_front())
     }
 }
 
