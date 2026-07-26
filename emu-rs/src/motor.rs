@@ -23,6 +23,7 @@ struct Bbshd {
     battery_v_x10: u16, // pack voltage, 0.1 V units (user-controlled)
     pas_wire: u8,       // last WRITE_PAS wire code the display sent
     lights: bool,       // last WRITE_LIGHTS state
+    brake: bool,        // brake held -> transmit a hard stop (speed/moving/current 0)
     motor_temp_c: u8,
     rx: Vec<u8>,        // request bytes from the display, awaiting parse
     tx: VecDeque<u8>,   // reply bytes queued for the display
@@ -35,19 +36,31 @@ impl Bbshd {
             battery_v_x10: 520, // 52.0 V (14S, ~60%)
             pas_wire: 0,
             lights: false,
+            brake: false,
             motor_temp_c: 24,
             rx: Vec::new(),
             tx: VecDeque::new(),
         }
     }
 
+    // Effective wheel speed on the wire: braking forces a stop. The Bafang
+    // display protocol has no brake signal, so the emulator conveys braking by
+    // reporting speed 0 (the display then shows stopped / no power).
+    fn eff_speed_x10(&self) -> u16 {
+        if self.brake {
+            0
+        } else {
+            self.speed_kph_x10
+        }
+    }
+
     fn moving(&self) -> bool {
-        self.speed_kph_x10 > 0
+        self.eff_speed_x10() > 0
     }
 
     fn wheel_rpm(&self) -> u16 {
         // rpm = kph * 1e6 / (perimeter_mm * 60); speed is in 0.1 km/h units
-        ((self.speed_kph_x10 as u32 * 100_000) / (PERIMETER_MM * 60)) as u16
+        ((self.eff_speed_x10() as u32 * 100_000) / (PERIMETER_MM * 60)) as u16
     }
 
     fn amp_x2(&self) -> u8 {
@@ -195,7 +208,8 @@ pub struct View {
     pub pas: Option<u8>, // level 0..9, or None for push/walk
     pub push: bool,
     pub lights: bool,
-    pub speed_kph_x10: u16,
+    pub brake: bool,
+    pub speed_kph_x10: u16, // user-set speed (what the wire reports when not braking)
     pub battery_v_x10: u16,
     pub moving: bool,
     pub temp_c: u8,
@@ -209,6 +223,7 @@ pub fn view() -> View {
         pas: pas_level(m.pas_wire),
         push: m.pas_wire == 0x06,
         lights: m.lights,
+        brake: m.brake,
         speed_kph_x10: m.speed_kph_x10,
         battery_v_x10: m.battery_v_x10,
         moving: m.moving(),
@@ -253,5 +268,10 @@ pub fn batt_up() {
 pub fn batt_down() {
     if let Ok(mut m) = MOTOR.lock() {
         m.battery_v_x10 = m.battery_v_x10.saturating_sub(1);
+    }
+}
+pub fn set_brake(on: bool) {
+    if let Ok(mut m) = MOTOR.lock() {
+        m.brake = on;
     }
 }
