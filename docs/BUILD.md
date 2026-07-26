@@ -233,10 +233,15 @@ the ground — the emu applies real PAS/lights to the motor.
 - Display keys: `↑ / ↓` assist · `Enter` (or `m`) menu · `Esc` (or `p`) power ·
   `Ctrl-C` quit. The bottom border shows the motor-connection dot; the button
   chips highlight while held.
-- Built-in motor keys: `←` / `→` change speed, `-` / `+` change battery voltage.
-  At 0 km/h the motor reports not-moving.
+- Built-in motor keys: `←` / `→` change speed, `-` / `+` change battery voltage,
+  `Space` (held) brakes — transmits speed 0 while down, restoring the set speed
+  on release. At 0 km/h the motor reports not-moving.
 - `EMU_HEADLESS=1` runs without a terminal (ticks for `EMU_HEADLESS_MS`, default
   4000, then dumps the framebuffer as ASCII) — handy for CI / scripted checks.
+- **UART logging.** With a real motor (`--motor-port` / `--motor-fd` /
+  `--motor-usb`) the full exchange is written to `logs/<date_time>.log` —
+  timestamped TX/RX lines with decoded opcodes — for offline protocol analysis.
+  (The built-in BBSHD backend isn't logged.)
 
 ## Debugging bluetooth linux
 

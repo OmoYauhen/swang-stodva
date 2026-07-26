@@ -8,6 +8,7 @@
 //! (motor.rs, default) or a real pty/serial port (serial.rs, --motor-port).
 
 mod ch340;
+mod logger;
 mod motor;
 mod serial;
 
@@ -244,6 +245,8 @@ fn motor_panel(v: &motor::View, pressed: &[bool; 4]) -> Vec<Line<'static>> {
              format!("{} km/h", v.speed_kph_x10 / 10)),
         ctrl("Bat  ", "[-]", "[+]", pressed[2], pressed[3],
              format!("{}.{} V", v.battery_v_x10 / 10, v.battery_v_x10 % 10)),
+        ctrl("Brake", "[space]", "", v.brake, false,
+             if v.brake { "on".into() } else { "off".into() }),
         Line::from(""),
         row("Moving:", if v.moving { "yes".into() } else { "no".into() }),
         row("Temp:", format!("{} \u{b0}C", v.temp_c)),
@@ -279,9 +282,11 @@ fn run(term: &mut Terminal<CrosstermBackend<Stdout>>, info: &MotorInfo) -> io::R
     // buttons and the four built-in-motor control keys.
     let mut btn_deadline: [Option<Instant>; 4] = [None; 4];
     let mut motor_deadline: [Option<Instant>; 4] = [None; 4];
+    let mut brake_deadline: Option<Instant> = None; // Space = held brake (built-in motor)
     let mut pressed = [false; 4];
     let mut applied = [false; 4];
     let mut motor_pressed = [false; 4];
+    let mut brake_applied = false;
     let mut next_tick = Instant::now();
 
     loop {
@@ -294,6 +299,7 @@ fn run(term: &mut Terminal<CrosstermBackend<Stdout>>, info: &MotorInfo) -> io::R
                 }
                 let idx = map_key(k.code);
                 let midx = if info.builtin { motor_key(k.code) } else { None };
+                let is_brake = info.builtin && k.code == KeyCode::Char(' ');
                 match k.kind {
                     KeyEventKind::Release => {
                         if let Some(i) = idx {
@@ -302,11 +308,16 @@ fn run(term: &mut Terminal<CrosstermBackend<Stdout>>, info: &MotorInfo) -> io::R
                         if let Some(m) = midx {
                             motor_deadline[m] = None;
                         }
+                        if is_brake {
+                            brake_deadline = None;
+                        }
                     }
                     _ => {
                         // Press or Repeat
                         let dl = Instant::now() + HOLD;
-                        if let Some(i) = idx {
+                        if is_brake {
+                            brake_deadline = Some(dl);
+                        } else if let Some(i) = idx {
                             btn_deadline[i] = Some(dl);
                         } else if let Some(m) = midx {
                             motor_deadline[m] = Some(dl);
@@ -331,6 +342,11 @@ fn run(term: &mut Terminal<CrosstermBackend<Stdout>>, info: &MotorInfo) -> io::R
                 applied[i] = pressed[i];
                 unsafe { emu_set_button(i as c_int, pressed[i]) };
             }
+        }
+        let brake = brake_deadline.map_or(false, |d| now < d);
+        if brake != brake_applied {
+            brake_applied = brake;
+            motor::set_brake(brake);
         }
 
         // ---- firmware ticks (catch up to real time) ----
@@ -466,6 +482,11 @@ fn main() -> io::Result<()> {
         }
     };
 
+    // Record the real-motor UART exchange for later protocol analysis.
+    if !info.builtin && info.connected {
+        logger::init(&info.label);
+    }
+
     unsafe {
         eeprom_init();
         showScreen(core::ptr::addr_of!(screen_boot) as *const c_void);
@@ -473,6 +494,7 @@ fn main() -> io::Result<()> {
 
     if std::env::var("EMU_HEADLESS").is_ok() {
         run_headless();
+        logger::flush();
         return Ok(());
     }
 
@@ -488,6 +510,7 @@ fn main() -> io::Result<()> {
     term.clear()?;
 
     let res = run(&mut term, &info);
+    logger::flush();
 
     let _ = execute!(term.backend_mut(), event::PopKeyboardEnhancementFlags);
     disable_raw_mode()?;

@@ -4,7 +4,7 @@
 //! (`crate::motor`), a userspace CH340 adapter (`crate::ch340`, Route B), or
 //! this pty/serial FD.
 
-use crate::{ch340, motor};
+use crate::{ch340, logger, motor};
 use std::ffi::CString;
 use std::sync::atomic::{AtomicI32, Ordering};
 
@@ -59,8 +59,10 @@ pub extern "C" fn emu_serial_write(buf: *const u8, len: i32) {
         motor::write(slice);
         return;
     }
+    // Real-motor backends (ch340 / serial FD) are logged for later analysis.
+    let slice = unsafe { std::slice::from_raw_parts(buf, len as usize) };
+    logger::log_tx(slice);
     if ch340::is_active() {
-        let slice = unsafe { std::slice::from_raw_parts(buf, len as usize) };
         ch340::write(slice);
         return;
     }
@@ -89,6 +91,7 @@ pub extern "C" fn emu_serial_read_byte(out: *mut u8) -> i32 {
     if ch340::is_active() {
         return match ch340::read_byte() {
             Some(b) => {
+                logger::log_rx_byte(b);
                 unsafe { *out = b };
                 1
             }
@@ -102,6 +105,7 @@ pub extern "C" fn emu_serial_read_byte(out: *mut u8) -> i32 {
     let mut b: u8 = 0;
     let n = unsafe { libc::read(fd, &mut b as *mut u8 as *mut libc::c_void, 1) };
     if n == 1 {
+        logger::log_rx_byte(b);
         unsafe { *out = b };
         1
     } else {
