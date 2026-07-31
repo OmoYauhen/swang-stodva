@@ -43,9 +43,10 @@ impl Bbshd {
         }
     }
 
-    // Effective wheel speed on the wire: braking forces a stop. The Bafang
-    // display protocol has no brake signal, so the emulator conveys braking by
-    // reporting speed 0 (the display then shows stopped / no power).
+    // Effective wheel speed on the wire: braking forces a stop. Braking is also
+    // signalled explicitly (STATUS 0x03 and the 0x0F brake flag, see reply()),
+    // matching a real BBSHD; reporting speed 0 additionally reflects that the
+    // controller cuts assist while the brake is held.
     fn eff_speed_x10(&self) -> u16 {
         if self.brake {
             0
@@ -123,11 +124,13 @@ impl Bbshd {
 
     fn reply(&mut self, op: u8) {
         match op {
-            0x08 => self.tx.push_back(0x00), // STATUS: normal
+            // STATUS enum: 0x01 = normal, 0x03 = braking (matches stock / bbs-fw).
+            0x08 => self.tx.push_back(if self.brake { 0x03 } else { 0x01 }),
             0x0A => {
                 let a = self.amp_x2();
                 self.push(&[a, a]); // CURRENT (degenerate checksum)
             }
+            0x0F => self.push(&[self.brake as u8]), // BRAKE: 0x01 held / 0x00 released
             0x11 => {
                 let p = self.battery_pct();
                 self.push(&[p, p]); // BATTERY %

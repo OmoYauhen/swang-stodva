@@ -450,6 +450,7 @@ struct bafang_state_t {
     uint16_t range_field;           // READ_RANGE (0x22) — motor temp/power hijack
     uint8_t  current_amp_x2;        // READ_CURRENT (0x0A), scaled: A * 2
     uint8_t  moving;                // READ_MOVING (0x31): 0 = still, 1 = moving
+    uint8_t  braking;               // READ_BRAKE (0x0F): 0 = released, 1 = held
     uint32_t rx_count;              // successful replies received (all opcodes)
     uint32_t chk_fail_count;        // per-opcode checksum failures
     uint32_t timeout_count;         // request → reply timeouts
