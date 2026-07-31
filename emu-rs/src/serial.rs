@@ -1,10 +1,9 @@
 //! Motor UART over a real pty/serial port (e.g. `--motor-port=/dev/ttyUSB0`).
 //! Exposes byte I/O to the C UART shim (csrc/uart.c) via `emu_serial_write` /
 //! `emu_serial_read_byte`. Those hooks pick a backend: the built-in BBSHD model
-//! (`crate::motor`), a userspace CH340 adapter (`crate::ch340`, Route B), or
-//! this pty/serial FD.
+//! (`crate::motor`) or this pty/serial FD.
 
-use crate::{ch340, motor};
+use crate::motor;
 use std::ffi::CString;
 use std::sync::atomic::{AtomicI32, Ordering};
 
@@ -59,11 +58,6 @@ pub extern "C" fn emu_serial_write(buf: *const u8, len: i32) {
         motor::write(slice);
         return;
     }
-    if ch340::is_active() {
-        let slice = unsafe { std::slice::from_raw_parts(buf, len as usize) };
-        ch340::write(slice);
-        return;
-    }
     let fd = FD.load(Ordering::SeqCst);
     if fd >= 0 {
         unsafe {
@@ -79,15 +73,6 @@ pub extern "C" fn emu_serial_read_byte(out: *mut u8) -> i32 {
     }
     if motor::is_active() {
         return match motor::read_byte() {
-            Some(b) => {
-                unsafe { *out = b };
-                1
-            }
-            None => 0,
-        };
-    }
-    if ch340::is_active() {
-        return match ch340::read_byte() {
             Some(b) => {
                 unsafe { *out = b };
                 1

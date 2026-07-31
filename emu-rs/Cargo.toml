@@ -13,13 +13,6 @@ path = "src/main.rs"
 ratatui = "0.29"
 crossterm = "0.28"
 libc = "0.2"
-# Route B: userspace CH340 USB-serial driver (Android/termux-usb, no root).
-# Optional so the base emulator doesn't pull in libusb.
-rusb = { version = "0.9", optional = true }
-
-[features]
-# Build with `--features usb` to enable `--motor-fd` / `--motor-usb`.
-usb = ["dep:rusb"]
 
 [build-dependencies]
 cc = "1"
