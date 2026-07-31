@@ -50,6 +50,7 @@ static const struct {
 } bafang_read_cycle[] = {
     { 0x08, 1 },  // STATUS
     { 0x0A, 2 },  // CURRENT      (amp_x2, chk = same byte)
+    { 0x0F, 1 },  // BRAKE        (0x01 held / 0x00 released, no checksum)
     { 0x11, 2 },  // BATTERY      (percent, chk = same byte)
     { 0x20, 3 },  // SPEED        (rpm_hi, rpm_lo, chk = sum + 0x20)
     { 0x22, 3 },  // RANGE        (bbs-fw stuffs motor temperature here)
@@ -183,7 +184,24 @@ static void bafang_parse_reply(uint8_t opcode, const uint8_t *rx) {
     switch (opcode) {
     case 0x08:  // STATUS: 1 byte, no checksum
         g_bafang.status = rx[0];
-        rt_vars.ui8_error_states = rx[0];
+        // The Bafang status byte is a numeric status/error CODE — an ENUM, not a
+        // bitfield (per bbs-fw app.h): 0x01 = NORMAL, 0x03 = BRAKING, and higher
+        // values are motor faults (0x08 hall, 0x11 over-temp, 0x12 current-sense,
+        // ...). It is NOT the TSDZ2 fault BITFIELD that screen_main's
+        // draw_fault_states() decodes; feeding it through those bit tests made a
+        // benign status (e.g. the braking code 0x03) render as an "initializing
+        // motor" fault that blanked the main-screen chart until you rode again.
+        // Until a proper Bafang error-code decoder exists, don't surface it as a
+        // fault. g_bafang.status is still kept for the Technical diagnostics.
+        rt_vars.ui8_error_states = 0;
+        // Brake, firmware-agnostically: the STATUS code is the ONLY brake signal
+        // bbs-fw puts on the wire (it never answers the dedicated 0x0F opcode —
+        // its display switch DISCARDs unknown reads); stock firmware reports both.
+        // Compare the exact enum value (NOT bit 0x02, which several fault codes
+        // also set). Leave braking untouched for fault codes so a stock motor's
+        // 0x0F reply still governs during a fault.
+        if (rx[0] == 0x01) { g_bafang.braking = 0; rt_vars.ui8_braking = 0; }
+        else if (rx[0] == 0x03) { g_bafang.braking = 1; rt_vars.ui8_braking = 1; }
         break;
 
     case 0x0A:  // CURRENT: amp_x2 + degenerate 1B checksum
@@ -191,6 +209,16 @@ static void bafang_parse_reply(uint8_t opcode, const uint8_t *rx) {
         g_bafang.current_amp_x2 = rx[0];
         // amp_x2 → amp_x5 conversion for the existing UI pipeline
         rt_vars.ui8_battery_current_x5 = (uint8_t)(((uint16_t)rx[0] * 5u) / 2u);
+        break;
+
+    case 0x0F:  // BRAKE: 1 byte, no checksum. 0x01 = lever held, 0x00 = released.
+        // A dedicated brake flag reverse-engineered against a real (STOCK-firmware)
+        // BBSHD with tools/brake_probe.py — the most direct signal. Note bbs-fw
+        // does NOT implement this opcode (no reply), so on a bbs-fw-flashed motor
+        // this poll just times out and braking comes from STATUS 0x03 above; the
+        // cost is one ~500 ms reply-timeout per read cycle. Fine for stock motors.
+        g_bafang.braking = (rx[0] != 0);
+        rt_vars.ui8_braking = g_bafang.braking;
         break;
 
     case 0x11:  // BATTERY: percent + degenerate 1B checksum
