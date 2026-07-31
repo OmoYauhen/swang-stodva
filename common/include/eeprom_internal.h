@@ -14,8 +14,13 @@
 
 // For compatible changes, just add new fields at the end of the table (they will be inited to 0xff for old eeprom images).  For incompatible
 // changes bump up EEPROM_MIN_COMPAT_VERSION and the user's EEPROM settings will be discarded.
-#define EEPROM_MIN_COMPAT_VERSION 0x3D
-#define EEPROM_VERSION 0x3D
+//
+// 0x3E (swang-stodva): force a clean-defaults reset. Devices flashed over an
+// earlier open-source SW102 firmware inherited the same 0x3D version byte but a
+// different struct layout, so config fields were read misaligned — surfacing as
+// e.g. number_of_assist_levels = 20 and a garbage auto-power-off timeout.
+#define EEPROM_MIN_COMPAT_VERSION 0x3E
+#define EEPROM_VERSION 0x3E
 
 typedef struct {
   graph_auto_max_min_t auto_max_min;
