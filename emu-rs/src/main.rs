@@ -7,7 +7,6 @@
 //! the firmware's motor UART is served either by the built-in BBSHD emulation
 //! (motor.rs, default) or a real pty/serial port (serial.rs, --motor-port).
 
-mod ch340;
 mod logger;
 mod motor;
 mod serial;
@@ -400,9 +399,7 @@ fn run_headless() {
 // How the emulator was told to source motor data.
 enum Backend {
     BuiltIn,      // no flag: in-process BBSHD
-    Port(String), // --motor-port=PATH: kernel pty/serial device
-    UsbFd(i32),   // --motor-fd=N: userspace CH340 over a termux-usb fd (Android)
-    UsbFirst,     // --motor-usb: userspace CH340 by VID:PID (desktop testing)
+    Port(String), // --motor-port=PATH: kernel pty/serial device (e.g. /dev/ttyUSB0)
 }
 
 fn parse_args() -> Backend {
@@ -413,24 +410,9 @@ fn parse_args() -> Backend {
             backend = Backend::Port(v.to_string());
         } else if a == "--motor-port" {
             backend = args.next().map(Backend::Port).unwrap_or(Backend::BuiltIn);
-        } else if let Some(v) = a.strip_prefix("--motor-fd=") {
-            match v.parse() {
-                Ok(fd) => backend = Backend::UsbFd(fd),
-                Err(_) => {
-                    eprintln!("swang-stodva-emu: --motor-fd needs a number, got '{v}'");
-                    std::process::exit(2);
-                }
-            }
-        } else if a == "--motor-usb" {
-            backend = Backend::UsbFirst;
         } else if a == "-h" || a == "--help" {
             print_help();
             std::process::exit(0);
-        } else if let Ok(fd) = a.parse::<i32>() {
-            // A bare number = a USB fd. termux-usb runs `-e <prog> <device>` by
-            // calling <prog> with the opened fd as its argument, so passing the
-            // emulator directly (no wrapper) lands the fd here.
-            backend = Backend::UsbFd(fd);
         } else {
             eprintln!("swang-stodva-emu: unknown argument '{a}' (try --help)");
             std::process::exit(2);
@@ -440,35 +422,14 @@ fn parse_args() -> Backend {
 }
 
 fn print_help() {
-    let usb = if ch340::AVAILABLE { "" } else { " (needs --features usb)" };
     println!(
         "swang-stodva-emu — SW102 terminal emulator\n\n\
          Usage: swang-stodva-emu [MOTOR]\n\n\
          Motor source (default: built-in BBSHD emulation):\n  \
-         --motor-port=PATH   UART device: pty or kernel serial (/dev/ttyUSB0)\n  \
-         --motor-fd=N        userspace CH340 over an open USB fd{usb};\n                      \
-             for Android/termux-usb (no root, no /dev/ttyUSB)\n  \
-         N                   a bare number is also treated as a USB fd, so\n                      \
-             `termux-usb -e <prog> <dev>` works with no wrapper\n  \
-         --motor-usb         userspace CH340 by VID:PID 1a86:7523{usb}\n\n\
+         --motor-port=PATH   UART device: pty or kernel serial (e.g. /dev/ttyUSB0)\n\n\
          Other:\n  \
          -h, --help          show this help"
     );
-}
-
-// Turn a ch340::open_* result into a MotorInfo, warning (not exiting) on error
-// so the emulator still starts and shows the display, just without motor data.
-fn usb_motor(res: Result<(), String>, label: String) -> MotorInfo {
-    match res {
-        Ok(()) => {
-            eprintln!("swang-stodva-emu: {label} opened @1200 baud");
-            MotorInfo { connected: true, label, builtin: false }
-        }
-        Err(e) => {
-            eprintln!("swang-stodva-emu: {e}; running blind");
-            MotorInfo { connected: false, label: "motor not connected".into(), builtin: false }
-        }
-    }
 }
 
 fn main() -> io::Result<()> {
@@ -481,8 +442,6 @@ fn main() -> io::Result<()> {
                 MotorInfo { connected: false, label: "motor not connected".into(), builtin: false }
             }
         }
-        Backend::UsbFd(fd) => usb_motor(ch340::open_fd(fd, 1200), format!("CH340 (fd {fd})")),
-        Backend::UsbFirst => usb_motor(ch340::open_first(1200), "CH340 (usb)".into()),
         Backend::BuiltIn => {
             motor::activate();
             MotorInfo { connected: true, label: "built-in BBSHD".into(), builtin: true }
