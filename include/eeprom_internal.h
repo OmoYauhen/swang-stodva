@@ -10,7 +10,6 @@
 #define _EEPROM_INTERNAL_H_
 
 #include "state.h"
-#include "screen.h"
 
 // For compatible changes, just add new fields at the end of the table (they will be inited to 0xff for old eeprom images).  For incompatible
 // changes bump up EEPROM_MIN_COMPAT_VERSION and the user's EEPROM settings will be discarded.
@@ -21,12 +20,6 @@
 // e.g. number_of_assist_levels = 20 and a garbage auto-power-off timeout.
 #define EEPROM_MIN_COMPAT_VERSION 0x3E
 #define EEPROM_VERSION 0x3E
-
-typedef struct {
-  graph_auto_max_min_t auto_max_min;
-  int32_t max;
-  int32_t min;
-} Graph_eeprom;
 
 typedef struct eeprom_data {
 	uint8_t eeprom_version; // Used to detect changes in eeprom encoding, if != EEPROM_VERSION we will not use it
@@ -95,63 +88,6 @@ typedef struct eeprom_data {
   uint8_t ui8_street_mode_throttle_enabled;
   uint8_t ui8_street_mode_hotkey_enabled;
 
-#ifndef SW102
-	Graph_eeprom graph_eeprom[VARS_SIZE];
-  uint8_t tripDistanceField_x_axis_scale_config;
-	field_threshold_t wheelSpeedField_auto_thresholds;
-	int32_t wheelSpeedField_config_error_threshold;
-	int32_t wheelSpeedField_config_warn_threshold;
-	uint8_t wheelSpeedField_x_axis_scale_config;
-	field_threshold_t cadenceField_auto_thresholds;
-  int32_t cadenceField_config_error_threshold;
-  int32_t cadenceField_config_warn_threshold;
-  uint8_t cadenceField_x_axis_scale_config;
-  field_threshold_t humanPowerField_auto_thresholds;
-  int32_t humanPowerField_config_error_threshold;
-  int32_t humanPowerField_config_warn_threshold;
-  uint8_t humanPowerField_x_axis_scale_config;
-  field_threshold_t batteryPowerField_auto_thresholds;
-  int32_t batteryPowerField_config_error_threshold;
-  int32_t batteryPowerField_config_warn_threshold;
-  uint8_t batteryPowerField_x_axis_scale_config;
-  field_threshold_t batteryPowerUsageField_auto_thresholds;
-  int32_t batteryPowerUsageField_config_error_threshold;
-  int32_t batteryPowerUsageField_config_warn_threshold;
-  uint8_t batteryPowerUsageField_x_axis_scale_config;
-  field_threshold_t batteryVoltageField_auto_thresholds;
-  int32_t batteryVoltageField_config_error_threshold;
-  int32_t batteryVoltageField_config_warn_threshold;
-  uint8_t batteryVoltageField_x_axis_scale_config;
-  field_threshold_t batteryCurrentField_auto_thresholds;
-  int32_t batteryCurrentField_config_error_threshold;
-  int32_t batteryCurrentField_config_warn_threshold;
-  uint8_t batteryCurrentField_x_axis_scale_config;
-  field_threshold_t motorCurrentField_auto_thresholds;
-  int32_t motorCurrentField_config_error_threshold;
-  int32_t motorCurrentField_config_warn_threshold;
-  uint8_t motorCurrentField_x_axis_scale_config;
-  field_threshold_t batterySOCField_auto_thresholds;
-  int32_t batterySOCField_config_error_threshold;
-  int32_t batterySOCField_config_warn_threshold;
-  uint8_t batterySOCField_x_axis_scale_config;
-  field_threshold_t motorTempField_auto_thresholds;
-  int32_t motorTempField_config_error_threshold;
-  int32_t motorTempField_config_warn_threshold;
-  uint8_t motorTempField_x_axis_scale_config;
-  field_threshold_t motorErpsField_auto_thresholds;
-  int32_t motorErpsField_config_error_threshold;
-  int32_t motorErpsField_config_warn_threshold;
-  uint8_t motorErpsField_x_axis_scale_config;
-  field_threshold_t pwmDutyField_auto_thresholds;
-  int32_t pwmDutyField_config_error_threshold;
-  int32_t pwmDutyField_config_warn_threshold;
-  uint8_t pwmDutyField_x_axis_scale_config;
-  field_threshold_t motorFOCField_auto_thresholds;
-  int32_t motorFOCField_config_error_threshold;
-  int32_t motorFOCField_config_warn_threshold;
-  uint8_t motorFOCField_x_axis_scale_config;
-#endif
-
   uint8_t ui8_pedal_cadence_fast_stop;
   uint8_t ui8_coast_brake_adc;
   uint8_t ui8_adc_lights_current_offset;
@@ -160,20 +96,10 @@ typedef struct eeprom_data {
   uint8_t ui8_torque_sensor_adc_threshold;
   uint8_t ui8_coast_brake_enable;
 
-#ifndef SW102
-  uint8_t  ui8_trip_a_auto_reset;
-	uint16_t ui16_trip_a_auto_reset_hours;
-  uint32_t ui32_trip_a_last_update_time;
-#endif
   uint32_t ui32_trip_a_distance_x1000;
   uint32_t ui32_trip_a_time;
   uint16_t ui16_trip_a_max_speed_x10;
 
-#ifndef SW102  
-  uint8_t  ui8_trip_b_auto_reset;
-	uint16_t ui16_trip_b_auto_reset_hours;
-  uint32_t ui32_trip_b_last_update_time;
-#endif
   uint32_t ui32_trip_b_distance_x1000;
   uint32_t ui32_trip_b_time;
   uint16_t ui16_trip_b_max_speed_x10;
@@ -272,13 +198,8 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_MOTOR_TEMPERATURE_MAX_VALUE_LIMIT             85 // 85 degrees celsius
 #define DEFAULT_VALUE_BATTERY_VOLTAGE_RESET_WH_COUNTER_X10          584 // 52v battery, 58.4 volts at fully charged
 #define DEFAULT_VALUE_LCD_POWER_OFF_TIME                            60 // 60 minutes, each unit 1 minute
-#ifdef SW102
 #define DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS                   100 // 8 = 40%
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
-#else
-#define DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS                   15 // 100 = 100%
-#define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  100
-#endif
 #define DEFAULT_VALUE_BATTERY_PACK_RESISTANCE                       300 // 52v battery, 14S3P measured 300 milli ohms
 #define DEFAULT_VALUE_OFFROAD_FEATURE_ENABLED                       0
 #define DEFAULT_VALUE_OFFROAD_MODE_ENABLED_ON_STARTUP               0
@@ -381,12 +302,6 @@ typedef struct eeprom_data {
 #define DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_8                300
 #endif
 
-#ifndef SW102
-#define DEFAULT_VALUE_TRIP_AUTO_RESET_ENABLE                         0 // disable
-#define DEFAULT_VALUE_TRIP_LAST_UPDATE                               0 // disable
-#define DEFAULT_VALUE_TRIP_A_AUTO_RESET_HOURS                        24 // 1 day 
-#define DEFAULT_VALUE_TRIP_B_AUTO_RESET_HOURS                        168 // 1 week = 7 * 24 = 168 hours
-#endif
 #define DEFAULT_VALUE_TRIP_DISTANCE                                  0
 #define DEFAULT_VALUE_TRIP_TIME                                      0
 #define DEFAULT_VALUE_TRIP_MAX_SPEED                                 0

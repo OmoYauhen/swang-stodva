@@ -113,7 +113,7 @@ Fields:
 - `--application-version` — **bump this for every release** you flash. The
   bootloader rejects packages whose version is not strictly greater than
   what's currently installed unless a debug mode is set. Track it
-  alongside `VERSION_STRING` in `../common/Makefile.common`.
+  alongside `VERSION_STRING` in `../version.mk`.
 - `--hw-version 51` — nRF51 family.
 - `--sd-req 0x87` — CRC of SoftDevice s130 2.0.1 (matches
   `nRF5_SDK_12.3.0/components/softdevice/s130/hex/`). Change this only if
@@ -135,7 +135,7 @@ Releases are cut by the manual **Release** workflow
 
 1. **bumps the version** (`tools/bump-version.py`; `release_type` = `prerelease`
    / `finalize` / `patch` / `minor` / `major`, with a `prerelease_label`),
-   updating `common/Makefile.common` — both `VERSION_STRING` (SemVer, shown in
+   updating `version.mk` — both `VERSION_STRING` (SemVer, shown in
    the UI) and the monotonic `VERSION_NUM` (DFU bootloader gate, +1 each time);
 2. **builds** the `.hex` reproducibly via `nix build .#firmware`;
 3. **packages** three flashable artifacts plus `SHA256SUMS`:

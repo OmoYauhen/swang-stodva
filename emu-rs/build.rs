@@ -12,9 +12,9 @@ fn main() {
 
     let firmware = [
         // shared / protocol / state
-        "common/src/utils.c",
-        "common/src/state.c",
-        "common/src/eeprom.c",
+        "src/sw102/utils.c",
+        "src/sw102/state.c",
+        "src/sw102/eeprom.c",
         // SW102 UI + framework
         "src/sw102/rtc.c",
         "src/sw102/gfx.c",
@@ -35,7 +35,6 @@ fn main() {
     let mut build = cc::Build::new();
     build
         .include(root.join("include"))
-        .include(root.join("common/include"))
         .include(root.join("assets"))
         .define("BOARD_CUSTOM", None)
         .define("SW102", None)

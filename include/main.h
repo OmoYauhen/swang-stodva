@@ -19,9 +19,6 @@ typedef union
   uint8_t byte[4];
 } U32;
 
-//#define  MAIN_SCREEN_FIELD_LABELS_COLOR C_GRAY
-#define  MAIN_SCREEN_FIELD_LABELS_COLOR C_WHITE_SMOKE
-
 void system_power(bool state);
 
 uint32_t get_seconds(); // how many seconds since boot
@@ -29,6 +26,15 @@ uint32_t get_time_base_counter_1ms();
 
 void SW102_rt_processing_stop(void);
 void SW102_rt_processing_start(void);
+
+// Recompute unit-conversion flags (kph/mph, C/F, kg/lb); defined in main.c.
+void set_conversions(void);
+
+// Per-tick graph bookkeeping; defined in main.c (real hardware has no graphs, so it is a stub).
+void rt_graph_process(void);
+
+// Index of the currently shown main screen; defined in main.c, persisted to EEPROM.
+extern uint8_t g_showNextScreenIndex, g_showNextScreenPreviousIndex;
 
 extern Button buttonM, buttonDWN, buttonUP, buttonPWR;
 

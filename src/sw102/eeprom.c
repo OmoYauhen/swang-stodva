@@ -12,8 +12,6 @@
 #include "eeprom_internal.h"
 #include "eeprom_hw.h"
 #include "main.h"
-#include "mainscreen.h"
-//#include "lcd_configurations.h"
 
 static eeprom_data_t m_eeprom_data;
 
@@ -142,7 +140,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
   DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_19,
   DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_20,
   },
-#ifdef SW102
   .field_selectors = {
     12, // human power
     13, // motor power
@@ -153,83 +150,10 @@ const eeprom_data_t m_eeprom_data_defaults = {
     13, // motor power
     20, // PWM
   },
-#else
-  .field_selectors = {
-    1,  // odometer
-    12, // human power
-    0,  // up time
-    13, // motor power
-
-    2, // trip A distance
-    4, // trip A avg speed
-    3, // trip A time
-    5, // trip A max speed
-
-    20, // PWM
-    15, // battery current
-    19, // motor speed
-    13, // motor power
-  },
-
-  .graphs_field_selectors = {
-    0, // wheel speed
-    3, // human power
-    5, // battery voltage
-  },
-#endif
 
   .showNextScreenIndex = 0,
   .x_axis_scale = DEFAULT_VALUE_X_AXIS_SCALE,
   .ui8_buttons_up_down_invert = DEFAULT_VALUE_BUTTONS_UP_DOWN_INVERT,
-
-#ifndef SW102
-  // enable automatic graph max min for every variable
-  .graph_eeprom[VarsWheelSpeed].auto_max_min = GRAPH_AUTO_MAX_MIN_MANUAL,
-  .graph_eeprom[VarsWheelSpeed].max = 350, // 35 km/h
-  .graph_eeprom[VarsWheelSpeed].min = 0,
-
-  .graph_eeprom[VarsTripDistance].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsCadence].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsHumanPower].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsBatteryPower].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsBatteryPowerUsage].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsBatteryVoltage].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsBatteryCurrent].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsMotorCurrent].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsBatterySOC].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsMotorTemp].auto_max_min = GRAPH_AUTO_MAX_MIN_SEMI_AUTO,
-  .graph_eeprom[VarsMotorERPS].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-  .graph_eeprom[VarsMotorPWM].auto_max_min = GRAPH_AUTO_MAX_MIN_SEMI_AUTO,
-  .graph_eeprom[VarsMotorFOC].auto_max_min = GRAPH_AUTO_MAX_MIN_AUTO,
-
-  .tripDistanceField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-
-  .wheelSpeedField_auto_thresholds = FIELD_THRESHOLD_MANUAL,
-  .wheelSpeedField_config_error_threshold = 350,
-  .wheelSpeedField_config_warn_threshold = 300,
-  .wheelSpeedField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-
-  .cadenceField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .cadenceField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-  .batteryPowerField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .batteryPowerField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-  .batteryPowerUsageField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .batteryPowerUsageField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_15M,
-  .batteryVoltageField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .batteryVoltageField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-  .batteryCurrentField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .batteryCurrentField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-  .motorCurrentField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .motorCurrentField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-  .motorTempField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .motorTempField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_15M,
-  .motorErpsField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .motorErpsField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-  .pwmDutyField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .pwmDutyField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-  .motorFOCField_auto_thresholds = FIELD_THRESHOLD_AUTO,
-  .motorFOCField_x_axis_scale_config = GRAPH_X_AXIS_SCALE_AUTO,
-#endif
 
   .ui16_torque_sensor_calibration_table_left[0][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_1,
   .ui16_torque_sensor_calibration_table_left[0][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_1,
@@ -280,19 +204,9 @@ const eeprom_data_t m_eeprom_data_defaults = {
   .ui8_torque_sensor_adc_threshold = DEFAULT_TORQUE_SENSOR_ADC_THRESHOLD,
   .ui8_coast_brake_enable = DEFAULT_COAST_BRAKE_ENABLE,
 
-#ifndef SW102
-  .ui8_trip_a_auto_reset = DEFAULT_VALUE_TRIP_AUTO_RESET_ENABLE,
-  .ui16_trip_a_auto_reset_hours = DEFAULT_VALUE_TRIP_A_AUTO_RESET_HOURS,
-#endif
-
   .ui32_trip_a_distance_x1000 = DEFAULT_VALUE_TRIP_DISTANCE,
   .ui32_trip_a_time = DEFAULT_VALUE_TRIP_TIME,
   .ui16_trip_a_max_speed_x10 = DEFAULT_VALUE_TRIP_MAX_SPEED,
-
-#ifndef SW102
-  .ui8_trip_b_auto_reset = DEFAULT_VALUE_TRIP_AUTO_RESET_ENABLE,
-  .ui16_trip_b_auto_reset_hours = DEFAULT_VALUE_TRIP_B_AUTO_RESET_HOURS,
-#endif
 
   .ui32_trip_b_distance_x1000 = DEFAULT_VALUE_TRIP_DISTANCE,
   .ui32_trip_b_time = DEFAULT_VALUE_TRIP_TIME,
@@ -422,139 +336,6 @@ void eeprom_init_variables(void) {
   ui_vars->ui8_buttons_up_down_invert = m_eeprom_data.ui8_buttons_up_down_invert;
   ui_vars->ui8_torque_sensor_calibration_pedal_ground = m_eeprom_data.ui8_torque_sensor_calibration_pedal_ground;
 
-#ifndef SW102
-  for (uint8_t i = 0; i < VARS_SIZE; i++) {
-    g_graphVars[i].auto_max_min = m_eeprom_data.graph_eeprom[i].auto_max_min;
-    g_graphVars[i].max = m_eeprom_data.graph_eeprom[i].max;
-    g_graphVars[i].min = m_eeprom_data.graph_eeprom[i].min;
-  }
-  tripDistanceGraph.rw->graph.x_axis_scale_config = m_eeprom_data.tripDistanceField_x_axis_scale_config;
-  graph_x_axis_scale_config_t temp = GRAPH_X_AXIS_SCALE_15M;
-  if (tripDistanceGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = tripDistanceGraph.rw->graph.x_axis_scale_config;
-  }
-  tripDistanceGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsWheelSpeed].auto_thresholds = m_eeprom_data.wheelSpeedField_auto_thresholds;
-  g_vars[VarsWheelSpeed].config_error_threshold = m_eeprom_data.wheelSpeedField_config_error_threshold;
-  g_vars[VarsWheelSpeed].config_warn_threshold = m_eeprom_data.wheelSpeedField_config_warn_threshold;
-  wheelSpeedGraph.rw->graph.x_axis_scale_config = m_eeprom_data.wheelSpeedField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (wheelSpeedGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = wheelSpeedGraph.rw->graph.x_axis_scale_config;
-  }
-  wheelSpeedGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsCadence].auto_thresholds = m_eeprom_data.cadenceField_auto_thresholds;
-  g_vars[VarsCadence].config_error_threshold = m_eeprom_data.cadenceField_config_error_threshold;
-  g_vars[VarsCadence].config_warn_threshold = m_eeprom_data.cadenceField_config_warn_threshold;
-  cadenceGraph.rw->graph.x_axis_scale_config = m_eeprom_data.cadenceField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (cadenceGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = cadenceGraph.rw->graph.x_axis_scale_config;
-  }
-  cadenceGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsHumanPower].auto_thresholds = m_eeprom_data.humanPowerField_auto_thresholds;
-  g_vars[VarsHumanPower].config_error_threshold = m_eeprom_data.humanPowerField_config_error_threshold;
-  g_vars[VarsHumanPower].config_warn_threshold = m_eeprom_data.humanPowerField_config_warn_threshold;
-  humanPowerGraph.rw->graph.x_axis_scale_config = m_eeprom_data.humanPowerField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (humanPowerGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = humanPowerGraph.rw->graph.x_axis_scale_config;
-  }
-  humanPowerGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsBatteryPower].auto_thresholds = m_eeprom_data.batteryPowerField_auto_thresholds;
-  g_vars[VarsBatteryPower].config_error_threshold = m_eeprom_data.batteryPowerField_config_error_threshold;
-  g_vars[VarsBatteryPower].config_warn_threshold = m_eeprom_data.batteryPowerField_config_warn_threshold;
-  batteryPowerGraph.rw->graph.x_axis_scale_config = m_eeprom_data.batteryPowerField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (batteryPowerGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = batteryPowerGraph.rw->graph.x_axis_scale_config;
-  }
-  batteryPowerGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsBatteryPowerUsage].auto_thresholds = m_eeprom_data.batteryPowerUsageField_auto_thresholds;
-  g_vars[VarsBatteryPowerUsage].config_error_threshold = m_eeprom_data.batteryPowerUsageField_config_error_threshold;
-  g_vars[VarsBatteryPowerUsage].config_warn_threshold = m_eeprom_data.batteryPowerUsageField_config_warn_threshold;
-  batteryPowerGraph.rw->graph.x_axis_scale_config = m_eeprom_data.batteryPowerUsageField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (batteryPowerUsageGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = batteryPowerUsageGraph.rw->graph.x_axis_scale_config;
-  }
-  batteryPowerUsageGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsBatteryVoltage].auto_thresholds = m_eeprom_data.batteryVoltageField_auto_thresholds;
-  g_vars[VarsBatteryVoltage].config_error_threshold = m_eeprom_data.batteryVoltageField_config_error_threshold;
-  g_vars[VarsBatteryVoltage].config_warn_threshold = m_eeprom_data.batteryVoltageField_config_warn_threshold;
-  batteryVoltageGraph.rw->graph.x_axis_scale_config = m_eeprom_data.batteryVoltageField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (batteryVoltageGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = batteryVoltageGraph.rw->graph.x_axis_scale_config;
-  }
-  batteryVoltageGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsBatteryCurrent].auto_thresholds = m_eeprom_data.batteryCurrentField_auto_thresholds;
-  g_vars[VarsBatteryCurrent].config_error_threshold = m_eeprom_data.batteryCurrentField_config_error_threshold;
-  g_vars[VarsBatteryCurrent].config_warn_threshold = m_eeprom_data.batteryCurrentField_config_warn_threshold;
-  batteryCurrentGraph.rw->graph.x_axis_scale_config = m_eeprom_data.batteryCurrentField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (batteryCurrentGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = batteryCurrentGraph.rw->graph.x_axis_scale_config;
-  }
-  batteryCurrentGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsMotorCurrent].auto_thresholds = m_eeprom_data.motorCurrentField_auto_thresholds;
-  g_vars[VarsMotorCurrent].config_error_threshold = m_eeprom_data.motorCurrentField_config_error_threshold;
-  g_vars[VarsMotorCurrent].config_warn_threshold = m_eeprom_data.motorCurrentField_config_warn_threshold;
-  motorCurrentGraph.rw->graph.x_axis_scale_config = m_eeprom_data.motorCurrentField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (motorCurrentGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = motorCurrentGraph.rw->graph.x_axis_scale_config;
-  }
-  motorCurrentGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsMotorTemp].auto_thresholds = m_eeprom_data.motorTempField_auto_thresholds;
-  g_vars[VarsMotorTemp].config_error_threshold = m_eeprom_data.motorTempField_config_error_threshold;
-  g_vars[VarsMotorTemp].config_warn_threshold = m_eeprom_data.motorTempField_config_warn_threshold;
-  motorTempGraph.rw->graph.x_axis_scale_config = m_eeprom_data.motorTempField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (motorTempGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = motorTempGraph.rw->graph.x_axis_scale_config;
-  }
-  motorTempGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsMotorERPS].auto_thresholds = m_eeprom_data.motorErpsField_auto_thresholds;
-  g_vars[VarsMotorERPS].config_error_threshold = m_eeprom_data.motorErpsField_config_error_threshold;
-  g_vars[VarsMotorERPS].config_warn_threshold = m_eeprom_data.motorErpsField_config_warn_threshold;
-  motorErpsGraph.rw->graph.x_axis_scale_config = m_eeprom_data.motorErpsField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (motorErpsGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = motorErpsGraph.rw->graph.x_axis_scale_config;
-  }
-  motorErpsGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsMotorPWM].auto_thresholds = m_eeprom_data.pwmDutyField_auto_thresholds;
-  g_vars[VarsMotorPWM].config_error_threshold = m_eeprom_data.pwmDutyField_config_error_threshold;
-  g_vars[VarsMotorPWM].config_warn_threshold = m_eeprom_data.pwmDutyField_config_warn_threshold;
-  pwmDutyGraph.rw->graph.x_axis_scale_config = m_eeprom_data.pwmDutyField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (pwmDutyGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = pwmDutyGraph.rw->graph.x_axis_scale_config;
-  }
-  pwmDutyGraph.rw->graph.x_axis_scale = temp;
-
-  g_vars[VarsMotorFOC].auto_thresholds = m_eeprom_data.motorFOCField_auto_thresholds;
-  g_vars[VarsMotorFOC].config_error_threshold = m_eeprom_data.motorFOCField_config_error_threshold;
-  g_vars[VarsMotorFOC].config_warn_threshold = m_eeprom_data.motorFOCField_config_warn_threshold;
-  motorFOCGraph.rw->graph.x_axis_scale_config = m_eeprom_data.motorFOCField_x_axis_scale_config;
-  temp = GRAPH_X_AXIS_SCALE_15M;
-  if (motorFOCGraph.rw->graph.x_axis_scale_config != GRAPH_X_AXIS_SCALE_AUTO) {
-    temp = motorFOCGraph.rw->graph.x_axis_scale_config;
-  }
-  motorFOCGraph.rw->graph.x_axis_scale = temp;
-#endif
 
   ui_vars->ui8_torque_sensor_calibration_feature_enabled = m_eeprom_data.ui8_torque_sensor_calibration_feature_enabled;
   ui_vars->ui8_torque_sensor_calibration_pedal_ground = m_eeprom_data.ui8_torque_sensor_calibration_pedal_ground;
@@ -597,21 +378,6 @@ void eeprom_init_variables(void) {
   ui_vars->ui8_coast_brake_enable =
       m_eeprom_data.ui8_coast_brake_enable;
 
-#ifndef SW102
-  ui_vars->ui8_trip_a_auto_reset =
-    m_eeprom_data.ui8_trip_a_auto_reset;
-  ui_vars->ui16_trip_a_auto_reset_hours =
-    m_eeprom_data.ui16_trip_a_auto_reset_hours;
-  rt_vars->ui32_trip_a_last_update_time =
-    m_eeprom_data.ui32_trip_a_last_update_time;
-
-  ui_vars->ui8_trip_b_auto_reset =
-    m_eeprom_data.ui8_trip_b_auto_reset;
-  ui_vars->ui16_trip_b_auto_reset_hours =
-    m_eeprom_data.ui16_trip_b_auto_reset_hours;
-  rt_vars->ui32_trip_b_last_update_time =
-    m_eeprom_data.ui32_trip_b_last_update_time;
-#endif
 
   // trip A values should reside on RT vars
   rt_vars->ui32_trip_a_distance_x1000 =
@@ -720,72 +486,6 @@ void eeprom_write_variables(void) {
     m_eeprom_data.ui16_torque_sensor_calibration_table_right[i][1] = ui_vars->ui16_torque_sensor_calibration_table_right[i][1];
   }
 
-#ifndef SW102
-  for (uint8_t i = 0; i < VARS_SIZE; i++) {
-    m_eeprom_data.graph_eeprom[i].auto_max_min = g_graphVars[i].auto_max_min;
-    m_eeprom_data.graph_eeprom[i].max = g_graphVars[i].max;
-    m_eeprom_data.graph_eeprom[i].min = g_graphVars[i].min;
-  }
-  m_eeprom_data.wheelSpeedField_auto_thresholds = g_vars[VarsWheelSpeed].auto_thresholds;
-  m_eeprom_data.wheelSpeedField_config_error_threshold = g_vars[VarsWheelSpeed].config_error_threshold;
-  m_eeprom_data.wheelSpeedField_config_warn_threshold = g_vars[VarsWheelSpeed].config_warn_threshold;
-  m_eeprom_data.wheelSpeedField_x_axis_scale_config = wheelSpeedGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.cadenceField_auto_thresholds = g_vars[VarsCadence].auto_thresholds;
-  m_eeprom_data.cadenceField_config_error_threshold = g_vars[VarsCadence].config_error_threshold;
-  m_eeprom_data.cadenceField_config_warn_threshold = g_vars[VarsCadence].config_warn_threshold;
-  m_eeprom_data.cadenceField_x_axis_scale_config = cadenceGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.humanPowerField_auto_thresholds = g_vars[VarsHumanPower].auto_thresholds;
-  m_eeprom_data.humanPowerField_config_error_threshold = g_vars[VarsHumanPower].config_error_threshold;
-  m_eeprom_data.humanPowerField_config_warn_threshold = g_vars[VarsHumanPower].config_warn_threshold;
-  m_eeprom_data.humanPowerField_x_axis_scale_config = humanPowerGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.batteryPowerField_auto_thresholds = g_vars[VarsBatteryPower].auto_thresholds;
-  m_eeprom_data.batteryPowerField_config_error_threshold = g_vars[VarsBatteryPower].config_error_threshold;
-  m_eeprom_data.batteryPowerField_config_warn_threshold = g_vars[VarsBatteryPower].config_warn_threshold;
-  m_eeprom_data.batteryPowerField_x_axis_scale_config = batteryPowerGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.batteryPowerUsageField_auto_thresholds = g_vars[VarsBatteryPowerUsage].auto_thresholds;
-  m_eeprom_data.batteryPowerUsageField_config_error_threshold = g_vars[VarsBatteryPowerUsage].config_error_threshold;
-  m_eeprom_data.batteryPowerUsageField_config_warn_threshold = g_vars[VarsBatteryPowerUsage].config_warn_threshold;
-  m_eeprom_data.batteryPowerUsageField_x_axis_scale_config = batteryPowerUsageGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.batteryVoltageField_auto_thresholds = g_vars[VarsBatteryVoltage].auto_thresholds;
-  m_eeprom_data.batteryVoltageField_config_error_threshold = g_vars[VarsBatteryVoltage].config_error_threshold;
-  m_eeprom_data.batteryVoltageField_config_warn_threshold = g_vars[VarsBatteryVoltage].config_warn_threshold;
-  m_eeprom_data.batteryVoltageField_x_axis_scale_config = batteryVoltageGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.batteryCurrentField_auto_thresholds = g_vars[VarsBatteryCurrent].auto_thresholds;
-  m_eeprom_data.batteryCurrentField_config_error_threshold = g_vars[VarsBatteryCurrent].config_error_threshold;
-  m_eeprom_data.batteryCurrentField_config_warn_threshold = g_vars[VarsBatteryCurrent].config_warn_threshold;
-  m_eeprom_data.batteryCurrentField_x_axis_scale_config = batteryCurrentGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.motorCurrentField_auto_thresholds = g_vars[VarsMotorCurrent].auto_thresholds;
-  m_eeprom_data.motorCurrentField_config_error_threshold = g_vars[VarsMotorCurrent].config_error_threshold;
-  m_eeprom_data.motorCurrentField_config_warn_threshold = g_vars[VarsMotorCurrent].config_warn_threshold;
-  m_eeprom_data.motorCurrentField_x_axis_scale_config = motorCurrentGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.motorTempField_auto_thresholds = g_vars[VarsMotorTemp].auto_thresholds;
-  m_eeprom_data.motorTempField_config_error_threshold = g_vars[VarsMotorTemp].config_error_threshold;
-  m_eeprom_data.motorTempField_config_warn_threshold = g_vars[VarsMotorTemp].config_warn_threshold;
-  m_eeprom_data.motorTempField_x_axis_scale_config = motorTempGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.motorErpsField_auto_thresholds = g_vars[VarsMotorERPS].auto_thresholds;
-  m_eeprom_data.motorErpsField_config_error_threshold = g_vars[VarsMotorERPS].config_error_threshold;
-  m_eeprom_data.motorErpsField_config_warn_threshold = g_vars[VarsMotorERPS].config_warn_threshold;
-  m_eeprom_data.motorErpsField_x_axis_scale_config = motorErpsGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.pwmDutyField_auto_thresholds = g_vars[VarsMotorPWM].auto_thresholds;
-  m_eeprom_data.pwmDutyField_config_error_threshold = g_vars[VarsMotorPWM].config_error_threshold;
-  m_eeprom_data.pwmDutyField_config_warn_threshold = g_vars[VarsMotorPWM].config_warn_threshold;
-  m_eeprom_data.pwmDutyField_x_axis_scale_config = pwmDutyGraph.rw->graph.x_axis_scale_config;
-
-  m_eeprom_data.motorFOCField_auto_thresholds = g_vars[VarsMotorFOC].auto_thresholds;
-  m_eeprom_data.motorFOCField_config_error_threshold = g_vars[VarsMotorFOC].config_error_threshold;
-  m_eeprom_data.motorFOCField_config_warn_threshold = g_vars[VarsMotorFOC].config_warn_threshold;
-  m_eeprom_data.motorFOCField_x_axis_scale_config = motorFOCGraph.rw->graph.x_axis_scale_config;
-#endif
 
   m_eeprom_data.showNextScreenIndex = g_showNextScreenPreviousIndex;
 
@@ -819,14 +519,6 @@ void eeprom_write_variables(void) {
   m_eeprom_data.ui8_coast_brake_enable =
       ui_vars->ui8_coast_brake_enable;
 
-#ifndef SW102
-  m_eeprom_data.ui8_trip_a_auto_reset =
-    ui_vars->ui8_trip_a_auto_reset;
-  m_eeprom_data.ui16_trip_a_auto_reset_hours = 
-    ui_vars->ui16_trip_a_auto_reset_hours;
-  m_eeprom_data.ui32_trip_a_last_update_time =
-    ui_vars->ui32_trip_a_last_update_time;
-#endif
 
   m_eeprom_data.ui32_trip_a_distance_x1000 =
       ui_vars->ui32_trip_a_distance_x1000;
@@ -835,14 +527,6 @@ void eeprom_write_variables(void) {
   m_eeprom_data.ui16_trip_a_max_speed_x10 =
       ui_vars->ui16_trip_a_max_speed_x10;
   
-#ifndef SW102
-  m_eeprom_data.ui8_trip_b_auto_reset =
-    ui_vars->ui8_trip_b_auto_reset;
-  m_eeprom_data.ui16_trip_b_auto_reset_hours = 
-    ui_vars->ui16_trip_b_auto_reset_hours;
-  m_eeprom_data.ui32_trip_b_last_update_time =
-    ui_vars->ui32_trip_b_last_update_time;
-#endif
 
   m_eeprom_data.ui32_trip_b_distance_x1000 =
       ui_vars->ui32_trip_b_distance_x1000;
@@ -857,7 +541,6 @@ void eeprom_write_variables(void) {
 
 void eeprom_init_defaults(void)
 {
-#ifdef SW102
   memset(&m_eeprom_data, 0, sizeof(m_eeprom_data));
   memcpy(&m_eeprom_data,
       &m_eeprom_data_defaults,
@@ -869,11 +552,4 @@ void eeprom_init_defaults(void)
   prepare_torque_sensor_calibration_table();
 
   flash_write_words(&m_eeprom_data, sizeof(m_eeprom_data) / sizeof(uint32_t));
-#else
-  // first force KEY value to 0
-  eeprom_write(ADDRESS_KEY, 0);
-
-  // eeprom_init() will read the default values now
-  eeprom_init();
-#endif
 }

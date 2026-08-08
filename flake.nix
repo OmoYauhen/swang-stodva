@@ -18,12 +18,12 @@
       let
         pkgs = import nixpkgs { inherit system; };
         # Cosmetic package label only; the release version of record lives in
-        # common/Makefile.common (VERSION_STRING), managed by the release workflow.
+        # version.mk (VERSION_STRING), managed by the release workflow.
         version = "0.0.1-alpha";
 
         # Terminal (ratatui) emulator — the Rust crate in emu-rs/, whose build.rs
         # compiles the firmware C via the cc crate. src is the whole repo so
-        # build.rs can reach ../common, ../src, ../include, ../assets.
+        # build.rs can reach ../src, ../include, ../assets.
         emu = pkgs.rustPlatform.buildRustPackage {
           pname = "swang-stodva-emu";
           inherit version;

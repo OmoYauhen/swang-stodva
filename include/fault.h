@@ -2,12 +2,11 @@
 
 #include <stdint.h>
 
-#if defined(SW102) && defined(NRF51)
+#ifdef NRF51
 #include "app_error.h"
 #else
-
-#define APP_ERROR_HANDLER(code) // FIXME - implement for 850c
-
+// Desktop emulator build: no nRF SDK, stub the handler out.
+#define APP_ERROR_HANDLER(code)
 #endif
 
 // Standard app error codes
