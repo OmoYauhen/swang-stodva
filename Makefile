@@ -46,8 +46,6 @@ endif
 
 OPENOCD := '$(OPENOCD_PATH)$(OPENOCD_BIN)' -f $(OPENOCD_PATH)../scripts/interface/stlink.cfg -f $(OPENOCD_PATH)../scripts/target/nrf51.cfg
 
-COMMON_DIR := common
-
 # Source files common to all targets
 SRC_FILES += \
   $(PROJ_DIR)/src/sw102/main.c \
@@ -67,9 +65,9 @@ SRC_FILES += \
   $(PROJ_DIR)/src/sw102/screen_cfg_tree.c \
   $(PROJ_DIR)/src/sw102/app_uart_fifo_mod.c \
   $(PROJ_DIR)/src/sw102/uart.c \
-  $(COMMON_DIR)/src/utils.c \
-  $(COMMON_DIR)/src/state.c \
-  $(COMMON_DIR)/src/eeprom.c \
+  $(PROJ_DIR)/src/sw102/utils.c \
+  $(PROJ_DIR)/src/sw102/state.c \
+  $(PROJ_DIR)/src/sw102/eeprom.c \
   $(SDK_ROOT)/components/libraries/util/app_error.c \
   $(SDK_ROOT)/components/libraries/util/app_error_weak.c \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
@@ -117,7 +115,6 @@ SRC_FILES += \
 INC_FOLDERS += \
   $(PROJ_DIR)/assets \
   $(PROJ_DIR)/include \
-  $(COMMON_DIR)/include \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/device \
@@ -217,7 +214,7 @@ INC_FOLDERS += \
 # Libraries common to all targets
 LIB_FILES += \
 
-include $(COMMON_DIR)/Makefile.common
+include version.mk
 
 # C flags common to all targets
 CFLAGS += $(OPT)

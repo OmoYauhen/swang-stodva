@@ -116,8 +116,8 @@ level number (0..9) to Bafang's non-monotonic wire codes on the fly
 
 ### Source changes relative to the anszom/SW102_LCD fork
 
-The "backend" changes concentrate in `common/src/state.c` and
-`common/include/uart.h`:
+The "backend" changes concentrate in `src/sw102/state.c` and
+`include/uart.h`:
 
 - new Bafang RX byte-level state machine (`uart_prime_rx(len)` API,
   caller-declared reply length, no CRC — checksums are opcode-specific)

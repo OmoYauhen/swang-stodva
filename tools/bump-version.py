@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Bump the version in common/Makefile.common.
+Bump the version in version.mk.
 
   VERSION_STRING — user-visible SemVer (e.g. 0.0.1-alpha.3)
   VERSION_NUM    — monotonic integer for the DFU bootloader; +1 every release
@@ -23,7 +23,7 @@ import re
 import sys
 from pathlib import Path
 
-MAKEFILE = Path(__file__).resolve().parent.parent / "common" / "Makefile.common"
+MAKEFILE = Path(__file__).resolve().parent.parent / "version.mk"
 SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$")
 
 
@@ -32,7 +32,7 @@ def read_current():
     ver = re.search(r"^VERSION_STRING\s*:=\s*(.+?)\s*$", text, re.M)
     num = re.search(r"^VERSION_NUM\s*:=\s*(\d+)\s*$", text, re.M)
     if not ver or not num:
-        sys.exit("error: could not find VERSION_STRING / VERSION_NUM in Makefile.common")
+        sys.exit("error: could not find VERSION_STRING / VERSION_NUM in version.mk")
     return text, ver.group(1), int(num.group(1))
 
 

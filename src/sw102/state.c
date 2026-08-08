@@ -20,7 +20,6 @@
 #include "timer.h"
 #include "lcd.h"
 #include <stdlib.h>
-#include "screen.h"
 
 uint8_t ui8_g_battery_soc;
 volatile uint8_t ui8_g_motorVariablesStabilized = 0;
@@ -65,7 +64,7 @@ static uint16_t bafang_reply_timeout_ticks = 0;
 #define BAFANG_REPLY_TIMEOUT_TICKS 5   // 5 x 100ms = 500 ms
 
 // Parsed live state, populated from motor replies. Struct definition
-// lives in common/include/state.h so the Technical config screen can
+// lives in include/state.h so the Technical config screen can
 // render these as read-only diagnostics.
 struct bafang_state_t g_bafang = { 0 };
 
@@ -585,36 +584,9 @@ static void rt_calc_trips(void) {
     if (rt_vars.ui16_wheel_speed_x10 > 0) {
       rt_vars.ui32_trip_a_time += 1;
       rt_vars.ui32_trip_b_time += 1;
-      
-#ifndef SW102
-      rt_vars.ui32_trip_a_last_update_time = RTC_GetCounter();
-      rt_vars.ui32_trip_b_last_update_time = RTC_GetCounter();
-#endif
-
     }
     ui8_1s_timer_counter = 0;
   }
-
-#ifndef SW102
-  uint32_t current_time = RTC_GetCounter();
-
-  if (ui_vars.ui8_trip_a_auto_reset && (current_time - rt_vars.ui32_trip_a_last_update_time >= ui_vars.ui16_trip_a_auto_reset_hours * 3600)) {
-    rt_vars.ui32_trip_a_last_update_time = current_time;
-    rt_vars.ui32_trip_a_distance_x1000 = 0;
-    rt_vars.ui32_trip_a_time = 0;
-    rt_vars.ui16_trip_a_avg_speed_x10 = 0;
-    rt_vars.ui16_trip_a_max_speed_x10 = 0;
-  }
-
-  if (ui_vars.ui8_trip_b_auto_reset && (current_time - rt_vars.ui32_trip_b_last_update_time >= ui_vars.ui16_trip_b_auto_reset_hours * 3600)) {
-    rt_vars.ui32_trip_b_last_update_time = current_time;
-    rt_vars.ui32_trip_b_distance_x1000 = 0;
-    rt_vars.ui32_trip_b_time = 0;
-    rt_vars.ui16_trip_b_avg_speed_x10 = 0;
-    rt_vars.ui16_trip_b_max_speed_x10 = 0;
-  }
-#endif
-
 }
 
 static void rt_low_pass_filter_pedal_cadence(void) {
@@ -696,19 +668,11 @@ void rt_calc_battery_soc(void) {
 }
 
 void rt_processing_stop(void) {
-#ifndef SW102
-  Display850C_rt_processing_stop();
-#else
   SW102_rt_processing_stop();
-#endif
 }
 
 void rt_processing_start(void) {
-#ifndef SW102
-  Display850C_rt_processing_start();
-#else
   SW102_rt_processing_start();
-#endif
 }
 
 /**
@@ -751,11 +715,6 @@ void copy_rt_to_ui_vars(void) {
 	ui_vars.ui32_wh_x10 = rt_vars.ui32_wh_x10;
 	ui_vars.ui8_braking = rt_vars.ui8_braking;
 	ui_vars.ui8_foc_angle = (((uint16_t) rt_vars.ui8_foc_angle) * 14) / 10; // each units is equal to 1.4 degrees ((360 degrees / 256) = 1.4)
-
-#ifndef SW102
-  ui_vars.ui32_trip_a_last_update_time = rt_vars.ui32_trip_a_last_update_time;
-  ui_vars.ui32_trip_b_last_update_time = rt_vars.ui32_trip_b_last_update_time;
-#endif
 
 	ui_vars.ui32_trip_a_distance_x1000 = rt_vars.ui32_trip_a_distance_x1000;
   ui_vars.ui32_trip_a_distance_x100 = rt_vars.ui32_trip_a_distance_x1000 / 10;  
