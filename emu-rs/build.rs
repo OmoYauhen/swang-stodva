@@ -62,4 +62,13 @@ fn main() {
     for f in firmware {
         println!("cargo:rerun-if-changed=../{f}");
     }
+    // rebuild when any included header or asset (e.g. *.xbm icons) changes
+    for dir in ["../include", "../assets"] {
+        println!("cargo:rerun-if-changed={dir}");
+        if let Ok(entries) = std::fs::read_dir(dir) {
+            for e in entries.flatten() {
+                println!("cargo:rerun-if-changed={}", e.path().display());
+            }
+        }
+    }
 }

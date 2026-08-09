@@ -108,14 +108,14 @@
 
 
 #ifndef BLE_BAS_ENABLED
-#define BLE_BAS_ENABLED 0
+#define BLE_BAS_ENABLED 1
 #endif
 
 // <q> BLE_CSCS_ENABLED  - ble_cscs - Cycling Speed and Cadence Service
- 
+
 
 #ifndef BLE_CSCS_ENABLED
-#define BLE_CSCS_ENABLED 0
+#define BLE_CSCS_ENABLED 1
 #endif
 
 // <q> BLE_CTS_C_ENABLED  - ble_cts_c - Current Time Service Client

@@ -16,8 +16,8 @@ const
 #include "icon_battery.xbm"
 DEFINE_IMAGE(icon_battery);
 const
-#include "icon_radio.xbm"
-DEFINE_IMAGE(icon_radio);
+#include "icon_arrow_right.xbm"
+DEFINE_IMAGE(icon_arrow_right);
 const
 #include "icon_walk.xbm"
 DEFINE_IMAGE(icon_walk);
@@ -194,7 +194,10 @@ static void draw_misc_indicators(ui_vars_t *ui)
 	if(ui->ui8_braking)
 		img_draw(&img_icon_brake, 23, 119);
 
-	img_draw(&img_icon_radio, 41, 119);
+	// Right arrow shows while the motor controller reports it is running
+	// (Bafang READ_MOVING 0x31: g_bafang.moving == 1).
+	if(g_bafang.moving)
+		img_draw(&img_icon_arrow_right, 41, 119);
 
 	if(ui->ui8_lights)
 		img_draw(&img_icon_light, 53, 118);
