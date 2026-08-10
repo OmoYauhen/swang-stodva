@@ -44,7 +44,6 @@ void ui_update()
 		rt_processing_stop();
 		copy_rt_to_ui_vars();
 		rt_processing_start();
-		batteryResistance();
 	}
 	++tick;
 }
