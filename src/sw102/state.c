@@ -223,8 +223,7 @@ static void bafang_parse_reply(uint8_t opcode, const uint8_t *rx) {
     case 0x11:  // BATTERY: percent + degenerate 1B checksum
         if (rx[0] != rx[1]) { g_bafang.chk_fail_count++; return; }
         g_bafang.battery_pct = rx[0];
-        // Note: ui8_g_battery_soc override happens in bafang_apply_directs()
-        // AFTER rt_calc_battery_soc() runs; setting it here would be clobbered.
+        // ui8_g_battery_soc mirrors this in bafang_apply_directs().
         break;
 
     case 0x20:  // SPEED: rpm_hi, rpm_lo, chk = (sum + 0x20) & 0xFF
@@ -266,12 +265,10 @@ static void bafang_parse_reply(uint8_t opcode, const uint8_t *rx) {
     g_bafang.rx_count++;
 }
 
-// Post-processing hook: called at the very end of rt_processing(), AFTER
-// all rt_calc_* functions have run. Reasserts direct-from-motor readings
-// that would otherwise be overwritten by voltage-based / Wh-based calcs.
+// Post-processing hook: called at the very end of rt_processing().
+// Copies direct-from-motor readings into the shared UI-facing state.
 static void bafang_apply_directs(void) {
-    // The motor reports battery percent directly; that's more accurate
-    // than the display's Wh-integrator, so make it authoritative.
+    // The motor reports battery percent directly; use it as the display SOC.
     if (g_bafang.rx_count > 0) {
         ui8_g_battery_soc = g_bafang.battery_pct;
     }
@@ -308,8 +305,6 @@ void ui_show_motor_status(motor_init_state_t state);
 
 rt_vars_t rt_vars;
 ui_vars_t ui_vars;
-
-volatile bool m_reset_wh_flag = false;
 
 ui_vars_t* get_ui_vars(void) {
 	return &ui_vars;
@@ -398,21 +393,10 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
       ui16_motor_current_accumulated_x5
           >> MOTOR_CURRENT_FILTER_COEFFICIENT;
 
-	// full battery power, considering the power loss also inside the battery and cables, because we are using the battery resistance
-  //
-  uint16_t ui16_battery_power_filtered_x50 = rt_vars.ui16_battery_current_filtered_x5 * rt_vars.ui16_battery_voltage_filtered_x10;
-  rt_vars.ui16_battery_power_filtered = ui16_battery_power_filtered_x50 / 50;
-
-  // P = R * I^2
-  uint32_t ui32_temp = (uint32_t) rt_vars.ui16_battery_current_filtered_x5;
-  ui32_temp = ui32_temp * ui32_temp; // I * I
-  ui32_temp /= 25;
-
-  ui32_temp *= (uint32_t) rt_vars.ui16_battery_pack_resistance_x1000; // R * I * I
-  ui32_temp /= 20; // now is _x50
-  rt_vars.ui16_battery_power_loss = (uint16_t) (ui32_temp / 50);
-
-  rt_vars.ui16_full_battery_power_filtered_x50 = ui16_battery_power_filtered_x50 + (uint16_t) ui32_temp;
+  // base battery power = I × V (no resistance-based loss term; the pack-resistance
+  // config and its P = R·I² adder were removed as dead code).
+  rt_vars.ui16_battery_power_filtered =
+      (rt_vars.ui16_battery_current_filtered_x5 * rt_vars.ui16_battery_voltage_filtered_x10) / 50;
 }
 
 void rt_low_pass_filter_pedal_power(void) {
@@ -428,58 +412,9 @@ void rt_low_pass_filter_pedal_power(void) {
 					>> PEDAL_POWER_FILTER_COEFFICIENT));
 }
 
-void rt_calc_battery_voltage_soc(void) {
-	uint16_t ui16_fluctuate_battery_voltage_x10;
-
-	// calculate flutuate voltage, that depends on the current and battery pack resistance
-	ui16_fluctuate_battery_voltage_x10 =
-			(uint16_t) ((((uint32_t) rt_vars.ui16_battery_pack_resistance_x1000)
-					* ((uint32_t) rt_vars.ui16_battery_current_filtered_x5))
-					/ ((uint32_t) 500));
-	// now add fluctuate voltage value
-	rt_vars.ui16_battery_voltage_soc_x10 =
-			rt_vars.ui16_battery_voltage_filtered_x10
-					+ ui16_fluctuate_battery_voltage_x10;
-}
-
-void rt_calc_wh(void) {
-	static uint8_t ui8_1s_timer_counter = 0;
-	uint32_t ui32_temp = 0;
-
-	if (m_reset_wh_flag == false) {
-    if (rt_vars.ui16_full_battery_power_filtered_x50 > 0) {
-      rt_vars.ui32_wh_sum_x5 += rt_vars.ui16_full_battery_power_filtered_x50 / 10;
-      rt_vars.ui32_wh_sum_counter++;
-    }
-
-    // calc at 1s rate
-    if (++ui8_1s_timer_counter >= 10) {
-      ui8_1s_timer_counter = 0;
-
-      // avoid zero divisison
-      if (rt_vars.ui32_wh_sum_counter != 0) {
-        ui32_temp = rt_vars.ui32_wh_sum_counter / 36;
-        ui32_temp = (ui32_temp
-            * (rt_vars.ui32_wh_sum_x5 / rt_vars.ui32_wh_sum_counter))
-            / 500;
-      }
-
-      rt_vars.ui32_wh_x10 = rt_vars.ui32_wh_x10_offset + ui32_temp;
-    }
-	}
-}
-
-void reset_wh(void) {
-  m_reset_wh_flag = true;
-  rt_vars.ui32_wh_sum_x5 = 0;
-  rt_vars.ui32_wh_sum_counter = 0;
-  m_reset_wh_flag = false;
-}
-
 static void rt_calc_odometer(void) {
   static uint8_t ui8_1s_timer_counter;
   static uint32_t ui32_remainder = 0;
-	uint8_t ui8_01km_flag = 0;
 
 	// calc at 1s rate
 	if (++ui8_1s_timer_counter >= 10) {
@@ -495,7 +430,6 @@ static void rt_calc_odometer(void) {
 			// update all distance variables
 			// ui_vars.ui16_distance_since_power_on_x10 += 1;
 			rt_vars.ui32_odometer_x10 += 1;
-			ui8_01km_flag = 1;
 			ui32_remainder = ui32_temp - 100000;
 
 			// reset the always incrementing value (up to motor controller power reset) by setting the offset to current value
@@ -503,29 +437,6 @@ static void rt_calc_odometer(void) {
 					rt_vars.ui32_wheel_speed_sensor_tick_counter;
 		}
 	}
-
-  // calc battery energy per km
-#define BATTERY_ENERGY_H_KM_FACTOR_X2 1800 // (60 * 60) / 2, each step at fixed interval of 100ms and apply 1 / 2 for have value from _x50 to _x100
-
-	// keep accumulating the energy
-  rt_vars.battery_energy_h_km.ui32_sum_x50 += rt_vars.ui16_full_battery_power_filtered_x50;
-
-  static uint16_t ui16_one_km_timeout_counter = 0;
-
-  // reset value if riding at very low speed or being stopped for 2 minutes
-  if (++ui16_one_km_timeout_counter >= 600) { // 600 equals min of average 2km/h for 2 minutes, at least
-    ui16_one_km_timeout_counter = 600; // keep on this state...
-    rt_vars.battery_energy_h_km.ui32_value_x100 = 0;
-    rt_vars.battery_energy_h_km.ui32_value_x10 = 0;
-    rt_vars.battery_energy_h_km.ui32_sum_x50 = 0;
-  }
-
-	if (ui8_01km_flag) {
-    ui16_one_km_timeout_counter = 0;
-    rt_vars.battery_energy_h_km.ui32_value_x100 = rt_vars.battery_energy_h_km.ui32_sum_x50 / BATTERY_ENERGY_H_KM_FACTOR_X2;
-    rt_vars.battery_energy_h_km.ui32_value_x10 = rt_vars.battery_energy_h_km.ui32_value_x100 / 10;
-    rt_vars.battery_energy_h_km.ui32_sum_x50 = 0;
-  }
 }
 
 static void rt_calc_trips(void) {
@@ -633,14 +544,6 @@ uint8_t rt_first_time_management(void) {
 
     ui8_motor_controller_init = 0;
 
-    // reset Wh value if battery voltage is over ui16_battery_voltage_reset_wh_counter_x10 (value configured by user)
-    if (((uint32_t) ui_vars.ui16_adc_battery_voltage *
-    ADC_BATTERY_VOLTAGE_PER_ADC_STEP_X10000)
-        > ((uint32_t) ui_vars.ui16_battery_voltage_reset_wh_counter_x10
-            * 1000)) {
-      ui_vars.ui32_wh_x10_offset = 0;
-    }
-
     if (ui_vars.ui8_offroad_feature_enabled
         && ui_vars.ui8_offroad_enabled_on_startup) {
       ui_vars.ui8_offroad_mode = 1;
@@ -648,23 +551,6 @@ uint8_t rt_first_time_management(void) {
   }
 
 	return ui8_status;
-}
-
-void rt_calc_battery_soc(void) {
-	uint32_t ui32_temp;
-
-	ui32_temp = rt_vars.ui32_wh_x10 * 100;
-
-	if (rt_vars.ui32_wh_x10_100_percent > 0) {
-		ui32_temp /= rt_vars.ui32_wh_x10_100_percent;
-	} else {
-		ui32_temp = 0;
-	}
-
-	if (ui32_temp > 100)
-		ui32_temp = 100;
-
-  ui8_g_battery_soc = (uint8_t) (100 - ui32_temp);
 }
 
 void rt_processing_stop(void) {
@@ -682,7 +568,6 @@ void rt_processing_start(void) {
 void copy_rt_to_ui_vars(void) {
 	ui_vars.ui16_adc_battery_voltage = rt_vars.ui16_adc_battery_voltage;
 	ui_vars.ui8_battery_current_x5 = rt_vars.ui8_battery_current_x5;
-	ui_vars.ui16_battery_power_loss = rt_vars.ui16_battery_power_loss;
 	ui_vars.ui8_motor_current_x5 = rt_vars.ui8_motor_current_x5;
 	ui_vars.ui8_throttle = rt_vars.ui8_throttle;
 	ui_vars.ui16_adc_pedal_torque_sensor = rt_vars.ui16_adc_pedal_torque_sensor;
@@ -705,14 +590,8 @@ void copy_rt_to_ui_vars(void) {
 			rt_vars.ui16_battery_current_filtered_x5;
   ui_vars.ui16_motor_current_filtered_x5 =
       rt_vars.ui16_motor_current_filtered_x5;
-	ui_vars.ui16_full_battery_power_filtered_x50 =
-			rt_vars.ui16_full_battery_power_filtered_x50;
 	ui_vars.ui16_battery_power = rt_vars.ui16_battery_power_filtered;
 	ui_vars.ui16_pedal_power = rt_vars.ui16_pedal_power_filtered;
-	ui_vars.ui16_battery_voltage_soc_x10 = rt_vars.ui16_battery_voltage_soc_x10;
-	ui_vars.ui32_wh_sum_x5 = rt_vars.ui32_wh_sum_x5;
-	ui_vars.ui32_wh_sum_counter = rt_vars.ui32_wh_sum_counter;
-	ui_vars.ui32_wh_x10 = rt_vars.ui32_wh_x10;
 	ui_vars.ui8_braking = rt_vars.ui8_braking;
 	ui_vars.ui8_foc_angle = (((uint16_t) rt_vars.ui8_foc_angle) * 14) / 10; // each units is equal to 1.4 degrees ((360 degrees / 256) = 1.4)
 
@@ -729,12 +608,8 @@ void copy_rt_to_ui_vars(void) {
   ui_vars.ui16_trip_b_max_speed_x10 = rt_vars.ui16_trip_b_max_speed_x10;
 
 	ui_vars.ui32_odometer_x10 = rt_vars.ui32_odometer_x10;
-	ui_vars.battery_energy_km_value_x100 = rt_vars.battery_energy_h_km.ui32_value_x100;
   ui_vars.ui16_adc_battery_current = rt_vars.ui16_adc_battery_current;
 
-  rt_vars.ui32_wh_x10_100_percent = ui_vars.ui32_wh_x10_100_percent;
-	rt_vars.ui32_wh_x10_offset = ui_vars.ui32_wh_x10_offset;
-	rt_vars.ui16_battery_pack_resistance_x1000 = ui_vars.ui16_battery_pack_resistance_x1000;
 	rt_vars.ui8_assist_level = ui_vars.ui8_assist_level;
 	for (uint8_t i = 0; i < ASSIST_LEVEL_NUMBER; i++) {
 	  rt_vars.ui16_assist_level_factor[i] = ui_vars.ui16_assist_level_factor[i];
@@ -745,15 +620,11 @@ void copy_rt_to_ui_vars(void) {
 	rt_vars.ui8_lights = ui_vars.ui8_lights;
 	rt_vars.ui8_walk_assist = ui_vars.ui8_walk_assist;
 	rt_vars.ui8_offroad_mode = ui_vars.ui8_offroad_mode;
-	rt_vars.ui8_battery_max_current = ui_vars.ui8_battery_max_current;
-	rt_vars.ui8_motor_max_current = ui_vars.ui8_motor_max_current;
 	rt_vars.ui8_motor_current_min_adc = ui_vars.ui8_motor_current_min_adc;
 	rt_vars.ui8_field_weakening = ui_vars.ui8_field_weakening;
 	rt_vars.ui8_ramp_up_amps_per_second_x10 =
 			ui_vars.ui8_ramp_up_amps_per_second_x10;
 	rt_vars.ui8_target_max_battery_power_div25 = ui_vars.ui8_target_max_battery_power_div25;
-	rt_vars.ui16_battery_low_voltage_cut_off_x10 =
-			ui_vars.ui16_battery_low_voltage_cut_off_x10;
 	rt_vars.ui16_wheel_perimeter = ui_vars.ui16_wheel_perimeter;
 	rt_vars.ui8_wheel_max_speed = ui_vars.wheel_max_speed_x10 / 10;
 	rt_vars.ui8_motor_type = ui_vars.ui8_motor_type;
@@ -795,8 +666,6 @@ void copy_rt_to_ui_vars(void) {
 
   rt_vars.ui8_street_mode_enabled = ui_vars.ui8_street_mode_enabled;
   rt_vars.ui8_street_mode_speed_limit = ui_vars.ui8_street_mode_speed_limit;
-  rt_vars.ui8_street_mode_power_limit_div25 = ui_vars.ui8_street_mode_power_limit_div25;
-  rt_vars.ui8_street_mode_throttle_enabled = ui_vars.ui8_street_mode_throttle_enabled;
 
   rt_vars.ui8_pedal_cadence_fast_stop = ui_vars.ui8_pedal_cadence_fast_stop;
   rt_vars.ui8_coast_brake_adc = ui_vars.ui8_coast_brake_adc;
@@ -877,14 +746,11 @@ void rt_processing(void)
   rt_low_pass_filter_battery_voltage_current_power();
   rt_low_pass_filter_pedal_power();
   rt_low_pass_filter_pedal_cadence();
-  rt_calc_battery_voltage_soc();
   rt_calc_odometer();
   rt_calc_trips();
-  rt_calc_wh();
   rt_graph_process();
   /************************************************************************************************/
   rt_first_time_management();
-  rt_calc_battery_soc();
   bafang_apply_directs();
 }
 
@@ -921,74 +787,4 @@ void prepare_torque_sensor_calibration_table(void) {
 
 
   rt_processing_start();
-}
-
-void batteryResistance(void) {
-
-  typedef enum {
-    WAIT_MOTOR_STOP = 0,
-    STARTUP = 1,
-    DELAY = 2,
-    CALC_RESISTANCE = 3,
-  } state_t;
-
-  static state_t state = WAIT_MOTOR_STOP;
-  static uint8_t ui8_counter;
-  static uint16_t ui16_batt_voltage_init_x10;
-  uint16_t ui16_batt_voltage_final_x10;
-  uint16_t ui16_batt_voltage_delta_x10;
-  uint16_t ui16_batt_current_final_x5;
-
-  switch (state) {
-    case WAIT_MOTOR_STOP:
-      // wait for motor stop to measure battery initial voltage
-      if (ui_vars.ui16_motor_current_filtered_x5 == 0) {
-        ui16_batt_voltage_init_x10 = ui_vars.ui16_battery_voltage_filtered_x10;
-        ui8_counter = 0;
-        state = STARTUP;
-      }
-      break;
-
-    case STARTUP:
-      // wait for motor running and at high battery current
-      if ((ui_vars.ui16_motor_speed_erps > 10) &&
-          (ui_vars.ui16_battery_current_filtered_x5 > (2 * 5))) {
-        ui8_counter = 0;
-        state = DELAY;
-      } else {
-
-        if (++ui8_counter > 50) // wait 5 seconds on this state
-          state = WAIT_MOTOR_STOP;
-      }
-      break;
-
-    case DELAY:
-      if (ui_vars.ui16_battery_current_filtered_x5 > (2 * 5)) {
-
-        if (++ui8_counter > 40) // sample battery final voltage after 4 seconds
-          state = CALC_RESISTANCE;
-
-      } else {
-        state = WAIT_MOTOR_STOP;
-      }
-      break;
-
-    case CALC_RESISTANCE:
-      ui16_batt_voltage_final_x10 = ui_vars.ui16_battery_voltage_filtered_x10;
-      ui16_batt_current_final_x5 = ui_vars.ui16_battery_current_filtered_x5;
-
-      if (ui16_batt_voltage_init_x10 > ui16_batt_voltage_final_x10) {
-        ui16_batt_voltage_delta_x10 = ui16_batt_voltage_init_x10 - ui16_batt_voltage_final_x10;
-      } else {
-        ui16_batt_voltage_delta_x10 = 0;
-      }
-
-      // R = U / I
-      ui_vars.ui16_battery_pack_resistance_estimated_x1000 =
-          (ui16_batt_voltage_delta_x10 * 500) / ui16_batt_current_final_x5 ;
-
-      state = WAIT_MOTOR_STOP;
-      break;
-  }
-
 }

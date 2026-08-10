@@ -65,8 +65,6 @@ void SW102_rt_processing_start(void) {
 
 void lcd_power_off(uint8_t updateDistanceOdo)
 {
-  ui_vars.ui32_wh_x10_offset = ui_vars.ui32_wh_x10;
-
 // save the variables on EEPROM
   eeprom_write_variables();
 

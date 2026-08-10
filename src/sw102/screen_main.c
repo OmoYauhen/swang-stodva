@@ -159,28 +159,19 @@ static void draw_battery_indicator(ui_vars_t *ui)
 
 	img_draw_clip(&img_icon_battery, 0, 1, 0, 0, batpx+3, img_icon_battery.h, 0);
 
-	switch (ui_vars.ui8_battery_soc_enable) {
-	case 0:
-		break;
-	case 1:
-		sprintf(buf, "%d%%", ui8_g_battery_soc);
-		break;
-	case 2:
-		sprintf(buf, "%d.%dV", ui->ui16_battery_voltage_soc_x10/10,  ui->ui16_battery_voltage_soc_x10 % 10);
-		break;
-	}
+	sprintf(buf, "%d%%", ui8_g_battery_soc);
 	font_text(&font_battery, 62, 3, buf, AlignRight);
 }
+
+static const uint16_t motor_power_options_w[] = { 250, 500, 750, 1000 };
 
 static void draw_power_indicator(ui_vars_t *ui)
 {
 	int tmp = ui->ui16_battery_power;
-	int max_current = ui->ui8_motor_max_current;
-	if(ui->ui8_battery_max_current > max_current)
-		max_current = ui->ui8_battery_max_current;
-
-	// estimate max. power from current limit & max voltage
-	int max_power = ui->ui16_battery_voltage_reset_wh_counter_x10 * max_current / 10;
+	uint8_t opt = ui->ui8_motor_power_option;
+	if (opt >= (sizeof(motor_power_options_w)/sizeof(motor_power_options_w[0])))
+		opt = 3;
+	int max_power = motor_power_options_w[opt];
 	if(tmp > max_power)
 		tmp = max_power;
 	tmp = tmp * 99 / max_power;
