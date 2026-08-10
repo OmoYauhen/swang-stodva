@@ -14,7 +14,6 @@
 #include "peer_manager.h"
 #include "softdevice_handler.h"
 #include "app_timer.h"
-#include "ble_nus.h"
 #include "ble_bas.h"
 #include "ble_cscs.h"
 #include "ble_dis.h"
@@ -22,12 +21,12 @@
 #include "state.h"
 #include "ble_conn_state.h"
 
-// define to enable the serial service
-#define BLE_SERIAL
-// define to able reporting speed and cadence via bluetooth
-//#define BLE_CSC
+// define to report wheel speed via the standard Cycling Speed & Cadence service
+#define BLE_CSC
 // define to enable reporting battery SOC via bluetooth
-//#define BLE_BAS
+#define BLE_BAS
+// define to broadcast all live telemetry via a custom 128-bit GATT service
+#define BLE_TELEMETRY
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 0                                           /**< Include the service_changed characteristic. If not enabled, the server's database cannot be changed for the lifetime of the device. */
 
@@ -54,14 +53,11 @@
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(30000, APP_TIMER_PRESCALER) /**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
 #define MAX_CONN_PARAMS_UPDATE_COUNT    3                                           /**< Number of attempts before giving up the connection parameter negotiation. */
 
-#ifdef BLE_SERIAL
-#define NUS_SERVICE_UUID_TYPE           BLE_UUID_TYPE_VENDOR_BEGIN                  /**< UUID type for the Nordic UART Service (vendor specific). */
-
-static ble_nus_t                        m_nus;                                      /**< Structure to identify the Nordic UART Service. */
-#endif
-
 static uint16_t                         m_conn_handle = BLE_CONN_HANDLE_INVALID;    /**< Handle of the current connection. */
 
+// Only 16-bit standard UUIDs are advertised: two 128-bit UUIDs (NUS + telemetry)
+// would overflow the 31-byte scan response. The 128-bit vendor services stay
+// discoverable after connecting.
 static ble_uuid_t                       m_adv_uuids[] = {
 #ifdef BLE_CSC
     {BLE_UUID_CYCLING_SPEED_AND_CADENCE, BLE_UUID_TYPE_BLE},
@@ -70,9 +66,6 @@ static ble_uuid_t                       m_adv_uuids[] = {
     {BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
 #endif
     {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE},
-#ifdef BLE_SERIAL
-    {BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}
-#endif
 };  /**< Universally unique service identifier. */
 
 /**@brief Function for the GAP initialization.
@@ -102,30 +95,6 @@ static void gap_params_init(void)
 }
 
 
-#ifdef BLE_SERIAL
-/**@brief Function for handling the data from the Nordic UART Service.
- *
- * @param[in] p_nus    Nordic UART Service structure.
- * @param[in] p_data   Data to be send to UART module.
- * @param[in] length   Length of the data.
- */
-static void nus_data_handler(ble_nus_t * p_nus, uint8_t * p_data, uint16_t length)
-{
- // fixme
-}
-
-// Init the serial port service
-static void serial_init()
-{
-  ble_nus_init_t nus_init;
-  memset(&nus_init, 0, sizeof(nus_init));
-
-  nus_init.data_handler = nus_data_handler;
-
-  APP_ERROR_CHECK(ble_nus_init(&m_nus, &nus_init));
-}
-#endif
-
 #ifdef BLE_CSC
 
 #define SPEED_AND_CADENCE_MEAS_INTERVAL APP_TIMER_TICKS(1000, APP_TIMER_PRESCALER)  /**< Speed and cadence measurement interval (milliseconds). */
@@ -153,50 +122,41 @@ static bool     m_auto_calibration_in_progress;                                 
 
 #define KPH_TO_MM_PER_SEC               278                                         /**< Constant to convert kilometers per hour into millimeters per second. */
 
-#define DEGREES_PER_REVOLUTION          360                                         /**< Constant used in simulation for calculating crank speed. */
-#define RPM_TO_DEGREES_PER_SEC          6                                           /**< Constant to convert revolutions per minute into degrees per second. */
+// The CSC measurement timer fires every 1000 ms (see SPEED_AND_CADENCE_MEAS_INTERVAL).
+#define CSC_MEAS_PERIOD_MS 1000
 
 static void csc_measurement(ble_cscs_meas_t * p_measurement)
 {
-    static uint16_t cumulative_crank_revs = 0;
-    static uint16_t event_time            = 0;
-    static uint16_t wheel_revolution_mm   = 0;
-    static uint16_t crank_rev_degrees     = 0;
+    static uint16_t event_time_1024        = 0;  // free-running clock, 1/1024 s units
+    static uint16_t partial_mm             = 0;  // sub-revolution distance carried over
+    static uint16_t last_wheel_event_time  = 0;  // timestamp of the most recent wheel revolution
 
-    uint16_t mm_per_sec;
-    uint16_t degrees_per_sec;
-    uint16_t event_time_inc;
-
-    // Per specification event time is in 1/1024th's of a second.
-    event_time_inc = (1024 * SPEED_AND_CADENCE_MEAS_INTERVAL) / 1000;
-
-    // Calculate simulated wheel revolution values.
+    // This hardware has no cadence source, so only wheel-revolution data is reported.
     p_measurement->is_wheel_rev_data_present = true;
+    p_measurement->is_crank_rev_data_present = false;
 
-    mm_per_sec = KPH_TO_MM_PER_SEC * 20;
+    // Advance the free-running clock by one measurement period (units of 1/1024 s).
+    event_time_1024 += (1024 * CSC_MEAS_PERIOD_MS) / 1000;
 
-    wheel_revolution_mm     += mm_per_sec * SPEED_AND_CADENCE_MEAS_INTERVAL / 1000;
-    m_cumulative_wheel_revs += wheel_revolution_mm / ui_vars.ui16_wheel_perimeter;
-    wheel_revolution_mm     %= ui_vars.ui16_wheel_perimeter;
+    // Distance covered this period. ui16_wheel_speed_x10 is 0.1 km/h; 1 km/h = 278 mm/s.
+    uint32_t mm_per_sec = (KPH_TO_MM_PER_SEC * (uint32_t) ui_vars.ui16_wheel_speed_x10) / 10;
+    partial_mm += (uint16_t) (mm_per_sec * CSC_MEAS_PERIOD_MS / 1000);
+
+    if (ui_vars.ui16_wheel_perimeter > 0)
+    {
+        uint16_t revs = partial_mm / ui_vars.ui16_wheel_perimeter;
+        if (revs > 0)
+        {
+            // Only timestamp when the wheel actually turned, so a stopped bike
+            // reports zero speed (both the count and the event time freeze).
+            m_cumulative_wheel_revs += revs;
+            partial_mm             %= ui_vars.ui16_wheel_perimeter;
+            last_wheel_event_time   = event_time_1024;
+        }
+    }
 
     p_measurement->cumulative_wheel_revs = m_cumulative_wheel_revs;
-    p_measurement->last_wheel_event_time =
-        event_time + (event_time_inc * (mm_per_sec - wheel_revolution_mm) / mm_per_sec);
-
-    // Calculate simulated cadence values.
-    p_measurement->is_crank_rev_data_present = true;
-
-    degrees_per_sec = RPM_TO_DEGREES_PER_SEC * 50;
-
-    crank_rev_degrees     += degrees_per_sec * SPEED_AND_CADENCE_MEAS_INTERVAL / 1000;
-    cumulative_crank_revs += crank_rev_degrees / DEGREES_PER_REVOLUTION;
-    crank_rev_degrees     %= DEGREES_PER_REVOLUTION;
-
-    p_measurement->cumulative_crank_revs = cumulative_crank_revs;
-    p_measurement->last_crank_event_time =
-        event_time + (event_time_inc * (degrees_per_sec - crank_rev_degrees) / degrees_per_sec);
-
-    event_time += event_time_inc;
+    p_measurement->last_wheel_event_time = last_wheel_event_time;
 }
 
 /**@brief Function for handling the Cycling Speed and Cadence measurement timer timeouts.
@@ -276,8 +236,8 @@ static void csc_init() {
   memset(&cscs_init, 0, sizeof(cscs_init));
 
   cscs_init.evt_handler = NULL;
-  cscs_init.feature     = BLE_CSCS_FEATURE_WHEEL_REV_BIT | BLE_CSCS_FEATURE_CRANK_REV_BIT |
-                          BLE_CSCS_FEATURE_MULTIPLE_SENSORS_BIT;
+  // Wheel speed only — this hardware has no cadence/crank sensor.
+  cscs_init.feature     = BLE_CSCS_FEATURE_WHEEL_REV_BIT;
 
   // Here the sec level for the Cycling Speed and Cadence Service can be changed/increased.
   BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cscs_init.csc_meas_attr_md.cccd_write_perm);   // for the measurement characteristic, only the CCCD write permission can be set by the application, others are mandated by service specification
@@ -376,21 +336,146 @@ static void bas_init() {
 #endif
 
 
+#ifdef BLE_TELEMETRY
+
+// Custom telemetry service: a single NOTIFY characteristic carrying all live ride
+// data in one packed struct, for a custom reader (nRF Connect / DIY screen).
+// 128-bit vendor base UUID, distinct from the Nordic UART Service base. The
+// service/characteristic are the 0x0001 / 0x0002 slots within that base:
+//   57430001-9a43-11e5-a58f-0002a5d5c51b  (service)
+//   57430002-9a43-11e5-a58f-0002a5d5c51b  (telemetry characteristic)
+#define BLE_UUID_TELEMETRY_SERVICE 0x0001
+#define BLE_UUID_TELEMETRY_CHAR    0x0002
+#define TELEMETRY_PACKET_VERSION   1
+
+// Base UUID in little-endian byte order (the 0x0000 at [12..13] is the 16-bit slot).
+static const ble_uuid128_t telemetry_base_uuid =
+    {{0x1b, 0xc5, 0xd5, 0xa5, 0x02, 0x00, 0x8f, 0xa5,
+      0xe5, 0x11, 0x43, 0x9a, 0x00, 0x00, 0x43, 0x57}};
+
+typedef struct __attribute__((packed)) {
+    uint8_t  version;       // packet format version (TELEMETRY_PACKET_VERSION)
+    int16_t  speed_x10;     // wheel speed, 0.1 km/h
+    uint8_t  soc;           // battery state of charge, %
+    int16_t  power_w;       // battery power, W
+    uint16_t volts_x10;     // battery voltage, 0.1 V
+    uint16_t amps_x5;       // battery current, 0.2 A units (x5)
+    int8_t   motor_temp_c;  // motor temperature, deg C
+    uint8_t  assist_level;  // PAS / assist level
+    uint8_t  brake;         // 1 = braking
+    uint8_t  lights;        // 1 = lights on
+} telemetry_packet_t;
+
+static uint8_t                  m_telemetry_uuid_type;
+static uint16_t                 m_telemetry_service_handle;
+static ble_gatts_char_handles_t m_telemetry_char_handles;
+
+static void telemetry_init(void)
+{
+    ble_uuid_t service_uuid;
+    APP_ERROR_CHECK(sd_ble_uuid_vs_add(&telemetry_base_uuid, &m_telemetry_uuid_type));
+
+    service_uuid.type = m_telemetry_uuid_type;
+    service_uuid.uuid = BLE_UUID_TELEMETRY_SERVICE;
+    APP_ERROR_CHECK(sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY,
+                                             &service_uuid,
+                                             &m_telemetry_service_handle));
+
+    ble_gatts_char_md_t char_md;
+    ble_gatts_attr_md_t cccd_md;
+    ble_gatts_attr_md_t attr_md;
+    ble_gatts_attr_t    attr_char_value;
+    ble_uuid_t          char_uuid;
+    telemetry_packet_t  initial = { .version = TELEMETRY_PACKET_VERSION };
+
+    // CCCD (so clients can subscribe to notifications).
+    memset(&cccd_md, 0, sizeof(cccd_md));
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.write_perm);
+    cccd_md.vloc = BLE_GATTS_VLOC_STACK;
+
+    memset(&char_md, 0, sizeof(char_md));
+    char_md.char_props.read   = 1;
+    char_md.char_props.notify = 1;
+    char_md.p_cccd_md         = &cccd_md;
+
+    char_uuid.type = m_telemetry_uuid_type;
+    char_uuid.uuid = BLE_UUID_TELEMETRY_CHAR;
+
+    memset(&attr_md, 0, sizeof(attr_md));
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_NO_ACCESS(&attr_md.write_perm);
+    attr_md.vloc = BLE_GATTS_VLOC_STACK;
+
+    memset(&attr_char_value, 0, sizeof(attr_char_value));
+    attr_char_value.p_uuid    = &char_uuid;
+    attr_char_value.p_attr_md = &attr_md;
+    attr_char_value.init_len  = sizeof(telemetry_packet_t);
+    attr_char_value.max_len   = sizeof(telemetry_packet_t);
+    attr_char_value.p_value   = (uint8_t *) &initial;
+
+    APP_ERROR_CHECK(sd_ble_gatts_characteristic_add(m_telemetry_service_handle,
+                                                    &char_md,
+                                                    &attr_char_value,
+                                                    &m_telemetry_char_handles));
+}
+
+// Fill and notify the telemetry packet from the current live values.
+static void telemetry_update(void)
+{
+    if (m_conn_handle == BLE_CONN_HANDLE_INVALID)
+        return;
+
+    telemetry_packet_t pkt = {
+        .version      = TELEMETRY_PACKET_VERSION,
+        .speed_x10    = (int16_t)  ui_vars.ui16_wheel_speed_x10,
+        .soc          =            ui8_g_battery_soc,
+        .power_w      = (int16_t)  ui_vars.ui16_battery_power,
+        .volts_x10    =            ui_vars.ui16_battery_voltage_filtered_x10,
+        .amps_x5      =            ui_vars.ui16_battery_current_filtered_x5,
+        .motor_temp_c = (int8_t)   ui_vars.ui8_motor_temperature,
+        .assist_level =            ui_vars.ui8_assist_level,
+        .brake        =            ui_vars.ui8_braking ? 1 : 0,
+        .lights       =            ui_vars.ui8_lights  ? 1 : 0,
+    };
+
+    uint16_t len = sizeof(pkt);
+    ble_gatts_hvx_params_t hvx = {
+        .handle = m_telemetry_char_handles.value_handle,
+        .type   = BLE_GATT_HVX_NOTIFICATION,
+        .offset = 0,
+        .p_len  = &len,
+        .p_data = (uint8_t *) &pkt,
+    };
+
+    uint32_t err_code = sd_ble_gatts_hvx(m_conn_handle, &hvx);
+    if ((err_code != NRF_SUCCESS) &&
+        (err_code != NRF_ERROR_INVALID_STATE) &&
+        (err_code != BLE_ERROR_NO_TX_PACKETS) &&
+        (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING))
+    {
+        APP_ERROR_HANDLER(err_code);
+    }
+}
+
+#endif // BLE_TELEMETRY
+
+
 
 /**@brief Function for initializing services that will be used by the application.
  */
 static void services_init(void)
 {
-#ifdef BLE_SERIAL
-    serial_init();
-#endif
-
 #ifdef BLE_CSC
     csc_init();
 #endif
 
 #ifdef BLE_BAS
     bas_init();
+#endif
+
+#ifdef BLE_TELEMETRY
+    telemetry_init();
 #endif
 
 //    // Initialize Device Information Service.
@@ -575,9 +660,6 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
   ble_conn_state_on_ble_evt(p_ble_evt);
   pm_on_ble_evt(p_ble_evt);
   ble_conn_params_on_ble_evt(p_ble_evt);
-#ifdef BLE_SERIAL
-  ble_nus_on_ble_evt(&m_nus, p_ble_evt);
-#endif
   on_ble_evt(p_ble_evt);
   ble_advertising_on_ble_evt(p_ble_evt);
 }
@@ -620,6 +702,9 @@ static void ble_stack_init(void)
     softdevice_enable_get_default_config(CENTRAL_LINK_COUNT,
         PERIPHERAL_LINK_COUNT,
         &ble_enable_params);
+
+    // One 128-bit vendor UUID base is in use: the custom telemetry service.
+    ble_enable_params.common_enable_params.vs_uuid_count = 1;
 
     //Check the ram settings against the used number of links
     CHECK_RAM_START_ADDR(CENTRAL_LINK_COUNT, PERIPHERAL_LINK_COUNT);
@@ -794,14 +879,11 @@ void ble_init(void)
   APP_ERROR_CHECK(ble_advertising_start(BLE_ADV_MODE_FAST));
 }
 
+// Called every 100 ms from the main loop.
 void send_bluetooth(rt_vars_t *rt_vars) {
- static uint8_t data_array[BLE_NUS_MAX_DATA_LEN]; // 19 bytes max
+ UNUSED_PARAMETER(rt_vars);
 
- sprintf(data_array, "%d,%d,%d,%d\n",
-     rt_vars->ui16_adc_pedal_torque_sensor, // torque sensor RAW
-     rt_vars->ui8_adc_throttle, // position
-     rt_vars->ui8_pedal_weight_with_offset, // weight in kgs with offset
-     rt_vars->ui8_pedal_cadence);
-
- ble_nus_string_send(&m_nus, data_array, strlen(data_array));
+#ifdef BLE_TELEMETRY
+ telemetry_update();
+#endif
 }

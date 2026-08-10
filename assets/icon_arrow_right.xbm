@@ -1,0 +1,8 @@
+// Stored transposed for the gfx blitter (see gfx.h: images are kept as
+// `mogrify -flip -rotate 90`) and with inverted polarity — gfx.c lights a pixel
+// where the source bit is 0. Each byte is one on-screen column (a 0 bit at
+// position c lights screen row c); the result is a 9-wide x 8-tall right arrow.
+#define icon_arrow_right_width 8
+#define icon_arrow_right_height 9
+static char icon_arrow_right_bits[] = {
+  0xE7, 0xE7, 0xE7, 0xE7, 0xE7, 0xE7, 0x81, 0xC3, 0xE7, };
