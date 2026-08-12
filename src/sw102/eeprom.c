@@ -22,14 +22,13 @@ const eeprom_data_t m_eeprom_data_defaults = {
   .eeprom_version = EEPROM_VERSION,
   .ui8_assist_level = DEFAULT_VALUE_ASSIST_LEVEL,
   .ui16_wheel_perimeter = DEFAULT_VALUE_WHEEL_PERIMETER,
-  .ui8_wheel_max_speed = DEFAULT_VALUE_WHEEL_MAX_SPEED,
   .ui8_units_type = DEFAULT_VALUE_UNITS_TYPE,
   .ui8_time_field_enable = DEAFULT_VALUE_TIME_FIELD,
   .ui8_target_max_battery_power_div25 = DEFAULT_VALUE_TARGET_MAX_BATTERY_POWER,
   .ui8_motor_power_option = DEFAULT_VALUE_MOTOR_POWER_OPTION,
+  .ui8_ble_broadcast_enabled = DEFAULT_VALUE_BLE_BROADCAST_ENABLED,
   .ui8_motor_current_min_adc = DEFAULT_VALUE_CURRENT_MIN_ADC,
   .ui8_field_weakening = DEFAULT_FIELD_WEAKENING,
-  .ui8_ramp_up_amps_per_second_x10 = DEFAULT_VALUE_RAMP_UP_AMPS_PER_SECOND_X10,
   .ui8_motor_type = DEFAULT_VALUE_MOTOR_TYPE,
   .ui8_motor_current_control_mode = DEFAULT_VALUE_MOTOR_CURRENT_CONTROL_MODE,
   .ui8_motor_assistance_startup_without_pedal_rotation = DEFAULT_VALUE_MOTOR_ASSISTANCE_WITHOUT_PEDAL_ROTATION,
@@ -84,12 +83,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
   DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_TIME,
   .ui8_startup_motor_power_boost_fade_time =
   DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FADE_TIME,
-  .ui8_temperature_limit_feature_enabled =
-  DEFAULT_VALUE_MOTOR_TEMPERATURE_FEATURE_ENABLE,
-  .ui8_motor_temperature_min_value_to_limit =
-  DEFAULT_VALUE_MOTOR_TEMPERATURE_MIN_VALUE_LIMIT,
-  .ui8_motor_temperature_max_value_to_limit =
-  DEFAULT_VALUE_MOTOR_TEMPERATURE_MAX_VALUE_LIMIT,
   .ui8_lcd_power_off_time_minutes =
   DEFAULT_VALUE_LCD_POWER_OFF_TIME,
   .ui8_lcd_backlight_on_brightness =
@@ -180,8 +173,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
   .ui16_torque_sensor_calibration_table_right[7][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_8,
   .ui16_torque_sensor_calibration_table_right[7][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_8,
 
-  .ui8_street_mode_function_enabled = DEFAULT_STREET_MODE_FUNCTION_ENABLE,
-  .ui8_street_mode_enabled = DEFAULT_STREET_MODE_ENABLE,
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
   .ui8_pedal_cadence_fast_stop = DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE,
   .ui8_coast_brake_adc = DEFAULT_COAST_BRAKE_ADC,
@@ -245,8 +236,6 @@ void eeprom_init_variables(void) {
 	// copy data final variables
 	ui_vars->ui8_assist_level = m_eeprom_data.ui8_assist_level;
 	ui_vars->ui16_wheel_perimeter = m_eeprom_data.ui16_wheel_perimeter;
-	ui_vars->wheel_max_speed_x10 =
-			m_eeprom_data.ui8_wheel_max_speed * 10;
 	ui_vars->ui8_units_type = m_eeprom_data.ui8_units_type;
   ui_vars->ui8_time_field_enable =
       m_eeprom_data.ui8_time_field_enable;
@@ -254,18 +243,16 @@ void eeprom_init_variables(void) {
       m_eeprom_data.ui8_target_max_battery_power_div25;
   ui_vars->ui8_motor_power_option =
       m_eeprom_data.ui8_motor_power_option;
+  ui_vars->ui8_ble_broadcast_enabled =
+      m_eeprom_data.ui8_ble_broadcast_enabled;
   ui_vars->ui8_motor_current_min_adc =
       m_eeprom_data.ui8_motor_current_min_adc;
   ui_vars->ui8_field_weakening =
       m_eeprom_data.ui8_field_weakening;
-	ui_vars->ui8_ramp_up_amps_per_second_x10 =
-			m_eeprom_data.ui8_ramp_up_amps_per_second_x10;
 	ui_vars->ui8_motor_type = m_eeprom_data.ui8_motor_type;
 	ui_vars->ui8_motor_current_control_mode = m_eeprom_data.ui8_motor_current_control_mode;
 	ui_vars->ui8_motor_assistance_startup_without_pedal_rotation =
 			m_eeprom_data.ui8_motor_assistance_startup_without_pedal_rotation;
-	ui_vars->ui8_temperature_limit_feature_enabled =
-			m_eeprom_data.ui8_temperature_limit_feature_enabled;
 	COPY_ARRAY(ui_vars, &m_eeprom_data, ui16_assist_level_factor);
 	ui_vars->ui8_number_of_assist_levels =
 			m_eeprom_data.ui8_number_of_assist_levels;
@@ -281,10 +268,6 @@ void eeprom_init_variables(void) {
 			m_eeprom_data.ui8_startup_motor_power_boost_time;
 	ui_vars->ui8_startup_motor_power_boost_fade_time =
 			m_eeprom_data.ui8_startup_motor_power_boost_fade_time;
-	ui_vars->ui8_motor_temperature_min_value_to_limit =
-			m_eeprom_data.ui8_motor_temperature_min_value_to_limit;
-	ui_vars->ui8_motor_temperature_max_value_to_limit =
-			m_eeprom_data.ui8_motor_temperature_max_value_to_limit;
 	ui_vars->ui8_lcd_power_off_time_minutes =
 			m_eeprom_data.ui8_lcd_power_off_time_minutes;
 	ui_vars->ui8_lcd_backlight_on_brightness =
@@ -322,10 +305,6 @@ void eeprom_init_variables(void) {
 
   g_showNextScreenIndex = m_eeprom_data.showNextScreenIndex;
 
-  ui_vars->ui8_street_mode_function_enabled =
-      m_eeprom_data.ui8_street_mode_function_enabled;
-  ui_vars->ui8_street_mode_enabled =
-      m_eeprom_data.ui8_street_mode_enabled;
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
 
@@ -366,8 +345,6 @@ void eeprom_write_variables(void) {
 	ui_vars_t *ui_vars = get_ui_vars();
 	m_eeprom_data.ui8_assist_level = ui_vars->ui8_assist_level;
 	m_eeprom_data.ui16_wheel_perimeter = ui_vars->ui16_wheel_perimeter;
-	m_eeprom_data.ui8_wheel_max_speed =
-			ui_vars->wheel_max_speed_x10 / 10;
 	m_eeprom_data.ui8_units_type = ui_vars->ui8_units_type;
   m_eeprom_data.ui8_time_field_enable =
       ui_vars->ui8_time_field_enable;
@@ -375,18 +352,16 @@ void eeprom_write_variables(void) {
       ui_vars->ui8_target_max_battery_power_div25;
   m_eeprom_data.ui8_motor_power_option =
       ui_vars->ui8_motor_power_option;
+  m_eeprom_data.ui8_ble_broadcast_enabled =
+      ui_vars->ui8_ble_broadcast_enabled;
   m_eeprom_data.ui8_motor_current_min_adc =
       ui_vars->ui8_motor_current_min_adc;
   m_eeprom_data.ui8_field_weakening =
       ui_vars->ui8_field_weakening;
-	m_eeprom_data.ui8_ramp_up_amps_per_second_x10 =
-			ui_vars->ui8_ramp_up_amps_per_second_x10;
 	m_eeprom_data.ui8_motor_type = ui_vars->ui8_motor_type;
 	m_eeprom_data.ui8_motor_current_control_mode = ui_vars->ui8_motor_current_control_mode;
 	m_eeprom_data.ui8_motor_assistance_startup_without_pedal_rotation =
 			ui_vars->ui8_motor_assistance_startup_without_pedal_rotation;
-	m_eeprom_data.ui8_temperature_limit_feature_enabled =
-			ui_vars->ui8_temperature_limit_feature_enabled;
 	COPY_ARRAY(&m_eeprom_data, ui_vars, ui16_assist_level_factor);
 	m_eeprom_data.ui8_number_of_assist_levels =
 			ui_vars->ui8_number_of_assist_levels;
@@ -402,10 +377,6 @@ void eeprom_write_variables(void) {
 			ui_vars->ui8_startup_motor_power_boost_time;
 	m_eeprom_data.ui8_startup_motor_power_boost_fade_time =
 			ui_vars->ui8_startup_motor_power_boost_fade_time;
-	m_eeprom_data.ui8_motor_temperature_min_value_to_limit =
-			ui_vars->ui8_motor_temperature_min_value_to_limit;
-	m_eeprom_data.ui8_motor_temperature_max_value_to_limit =
-			ui_vars->ui8_motor_temperature_max_value_to_limit;
 	m_eeprom_data.ui8_lcd_power_off_time_minutes =
 			ui_vars->ui8_lcd_power_off_time_minutes;
 	m_eeprom_data.ui8_lcd_backlight_on_brightness =
@@ -442,10 +413,6 @@ void eeprom_write_variables(void) {
 
   m_eeprom_data.showNextScreenIndex = g_showNextScreenPreviousIndex;
 
-  m_eeprom_data.ui8_street_mode_function_enabled =
-      ui_vars->ui8_street_mode_function_enabled;
-  m_eeprom_data.ui8_street_mode_enabled =
-      ui_vars->ui8_street_mode_enabled;
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;
 

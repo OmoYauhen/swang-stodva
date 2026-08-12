@@ -248,11 +248,6 @@ static void main_idle()
 		}
 	}
 
-	if(ui->ui8_street_mode_enabled) {
-		draw_hline(0, 64, 13);
-		draw_hline(0, 64, 115);
-	}
-
 	draw_battery_indicator(ui);
 
 	draw_misc_indicators(ui);
@@ -296,9 +291,6 @@ static void main_button(int but)
 		ui->ui8_lights = !ui->ui8_lights;
 		set_lcd_backlight();
 	}
-
-	if((but & UP_LONG_CLICK) && ui->ui8_street_mode_function_enabled) 
-		ui->ui8_street_mode_enabled =! ui->ui8_street_mode_enabled;
 
 	if ((but & DOWN_LONG_CLICK) && ui->ui8_walk_assist_feature_enabled) {
 		ui_vars.ui8_walk_assist = 1;

@@ -423,6 +423,9 @@ static void telemetry_init(void)
 // Fill and notify the telemetry packet from the current live values.
 static void telemetry_update(void)
 {
+    if (ui_vars.ui8_ble_broadcast_enabled == 0)
+        return;
+
     if (m_conn_handle == BLE_CONN_HANDLE_INVALID)
         return;
 
