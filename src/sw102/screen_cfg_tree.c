@@ -9,59 +9,53 @@ static void do_reset_trip_a(const struct configtree_t *ign);
 static void do_reset_trip_b(const struct configtree_t *ign);
 static void do_reset_ble(const struct configtree_t *ign);
 static void do_reset_all(const struct configtree_t *ign);
+static void do_pop_back(const struct configtree_t *ign);
 void cfg_push_assist_screen(const struct configtree_t *ign);
 void cfg_push_walk_assist_screen(const struct configtree_t *ign);
 
 static bool do_set_odometer(const struct configtree_t *ign, int wh);
 
-static const char *disable_enable[] = { "disable", "enable", 0 };
 static const char *off_on[] = { "off", "on", 0 };
 
 static const struct configtree_t cfgroot[] = {
-	{ "Trip memory", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 18, 0, 128, (const struct configtree_t[]) {
+	{ "Trip", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 18, 0, 128, (const struct configtree_t[]) {
 		{ "Reset trip A", F_BUTTON, .action = do_reset_trip_a },
 		{ "Reset trip B", F_BUTTON, .action = do_reset_trip_b },
 		{},
 	}}},
+	{ "PAS levels", F_BUTTON, .action = cfg_push_assist_screen },
+	// Wrap top-level numeric/options entries in single-item submenus so their edit
+	// view inherits winh=36 (roomy) instead of cfg_root's compact winh=18 — which
+	// caused the parent title and the value overlay to collide in the same band.
 	{ "Wheel", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
-		{ "Max speed", F_NUMERIC, .numeric = &(const struct cfgnumeric_t){ PTRSIZE(ui_vars.wheel_max_speed_x10), 1, "km/h", 10, 990, 10 }},
-		{ "Circumference", F_NUMERIC, .numeric = &(const struct cfgnumeric_t){ PTRSIZE(ui_vars.ui16_wheel_perimeter), 0, "mm", 750, 3000, 10 }},
+		{ "Perimeter", F_NUMERIC, .numeric = &(const struct cfgnumeric_t){ PTRSIZE(ui_vars.ui16_wheel_perimeter), 0, "mm", 750, 3000, 10 }},
 		{},
 	}}},
 	{ "Motor", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
 		{ "Power", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_motor_power_option), (const char*[]){ "250W", "500W", "750W", "1000W", 0 }}},
-		{ "Current ramp", F_NUMERIC, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_ramp_up_amps_per_second_x10), 1, "A", 4, 100 }},
 		{},
 	}}},
-	// (BBSHD has no torque sensor — the whole Torque submenu, its calibration
-	//  screen, and Motor's TSDZ2 tuning knobs — Motor voltage, Control mode,
-	//  Min current, Field weakening — were removed when this display was
-	//  ported to the Bafang protocol.)
-	{ "Assist", F_BUTTON, .action = cfg_push_assist_screen },
 	{ "Walk assist", F_BUTTON, .action = cfg_push_walk_assist_screen },
-	{ "Temperature", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
-		{ "Temp. sensor", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_temperature_limit_feature_enabled), disable_enable } },
-		{ "Min limit", F_NUMERIC, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_motor_temperature_min_value_to_limit), 0, "C", 30, 100 }},
-		{ "Max limit", F_NUMERIC, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_motor_temperature_max_value_to_limit), 0, "C", 30, 100 }},
+	{ "BLE cast", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
+		{ "Enabled", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_ble_broadcast_enabled), off_on } },
 		{},
 	}}},
-	{ "Street mode", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
-		{ "Feature", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_street_mode_function_enabled), disable_enable } },
-		{ "Current status", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_street_mode_enabled), off_on } },
-		{ "Speed limit", F_NUMERIC, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_street_mode_speed_limit), 0, "km/h", 1, 99 }},
+	{ "Speed limit", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
+		{ "Limit", F_NUMERIC, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_street_mode_speed_limit), 0, "km/h", 1, 99 }},
 		{},
 	}}},
-	{ "Various", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
+	{ "Auto power off", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
+		{ "Idle timeout", F_NUMERIC, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_lcd_power_off_time_minutes), 0, "min", 0, 255 }},
+		{},
+	}}},
+	{ "About", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
+		{ "v" VERSION_STRING, F_BUTTON, .action = do_pop_back },
 		{ "Odometer", F_NUMERIC|F_CALLBACK, .numeric_cb = &(const struct cfgnumeric_cb_t) { { PTRSIZE(ui_vars.ui32_odometer_x10), 1, "km", 0, INT32_MAX-100 }, do_set_odometer }},
-		{ "Auto power off", F_NUMERIC, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_lcd_power_off_time_minutes), 0, "min", 0, 255 }},
 		{ "Reset BLE peers", F_BUTTON, .action = do_reset_ble },
-		{ "Reset all settings", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 18, 0, 128, (const struct configtree_t[]) {
+		{ "Reset all", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 18, 0, 128, (const struct configtree_t[]) {
 			{ "Confirm reset all", F_BUTTON, .action = do_reset_all },
 			{}
 		}}},
-		{}
-	}}},
-	{ "Technical", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
 		// ---- Bafang READ replies (live from communications() round-robin) ----
 		{ "Motor status",     F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.status), 0, "" }},
 		{ "Wheel RPM",        F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.wheel_rpm), 0, "rpm" }},
@@ -171,6 +165,8 @@ static void do_reset_all(const struct configtree_t *ign)
 	eeprom_init_defaults();
 	showScreen(&screen_main);
 }
+
+static void do_pop_back(const struct configtree_t *ign) { (void)ign; sstack_pop(); }
 
 static bool do_set_odometer(const struct configtree_t *ign, int v)
 {

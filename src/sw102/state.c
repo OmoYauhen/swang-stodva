@@ -115,6 +115,20 @@ static void bafang_send_write_lights(bool on) {
     // No reply.
 }
 
+static void bafang_send_write_speed_limit(uint16_t kmh_x10) {
+    // WRITE_SPEED_LIM: [0x16, 0x1F, hi, lo, checksum = sum of first 4].
+    // On stock Bafang firmware the motor honors the limit; on bbs-fw the frame
+    // is ack'd but discarded — noted in bbshd.md.
+    uint8_t *tx = uart_get_tx_buffer();
+    tx[0] = BAFANG_CAT_WRITE;
+    tx[1] = 0x1F;
+    tx[2] = (uint8_t)(kmh_x10 >> 8);
+    tx[3] = (uint8_t)(kmh_x10 & 0xFF);
+    tx[4] = (uint8_t)(tx[0] + tx[1] + tx[2] + tx[3]);
+    uart_send_tx_buffer(tx, 5);
+    // No reply.
+}
+
 // Last-sent wire values, so we only transmit on user-initiated change.
 // 0xFF is a "never sent" sentinel that guarantees an initial sync.
 static uint8_t bafang_last_pas_code = 0xFF;
@@ -548,6 +562,11 @@ uint8_t rt_first_time_management(void) {
         && ui_vars.ui8_offroad_enabled_on_startup) {
       ui_vars.ui8_offroad_mode = 1;
     }
+
+    // Push the configured speed limit down to the motor once the UART link has
+    // stabilized. Protocol wants kmh × 10 (big-endian). Stock Bafang firmware
+    // honors this; bbs-fw acks and discards it.
+    bafang_send_write_speed_limit((uint16_t)ui_vars.ui8_street_mode_speed_limit * 10);
   }
 
 	return ui8_status;
@@ -622,17 +641,12 @@ void copy_rt_to_ui_vars(void) {
 	rt_vars.ui8_offroad_mode = ui_vars.ui8_offroad_mode;
 	rt_vars.ui8_motor_current_min_adc = ui_vars.ui8_motor_current_min_adc;
 	rt_vars.ui8_field_weakening = ui_vars.ui8_field_weakening;
-	rt_vars.ui8_ramp_up_amps_per_second_x10 =
-			ui_vars.ui8_ramp_up_amps_per_second_x10;
 	rt_vars.ui8_target_max_battery_power_div25 = ui_vars.ui8_target_max_battery_power_div25;
 	rt_vars.ui16_wheel_perimeter = ui_vars.ui16_wheel_perimeter;
-	rt_vars.ui8_wheel_max_speed = ui_vars.wheel_max_speed_x10 / 10;
 	rt_vars.ui8_motor_type = ui_vars.ui8_motor_type;
 	rt_vars.ui8_motor_current_control_mode = ui_vars.ui8_motor_current_control_mode;
 	rt_vars.ui8_motor_assistance_startup_without_pedal_rotation =
 			ui_vars.ui8_motor_assistance_startup_without_pedal_rotation;
-	rt_vars.ui8_temperature_limit_feature_enabled =
-			ui_vars.ui8_temperature_limit_feature_enabled;
 	rt_vars.ui8_startup_motor_power_boost_always =
 			ui_vars.ui8_startup_motor_power_boost_always;
 	rt_vars.ui8_startup_motor_power_boost_limit_power =
@@ -646,10 +660,6 @@ void copy_rt_to_ui_vars(void) {
 			ui_vars.ui8_startup_motor_power_boost_fade_time;
 	rt_vars.ui8_startup_motor_power_boost_feature_enabled =
 			ui_vars.ui8_startup_motor_power_boost_feature_enabled;
-	rt_vars.ui8_motor_temperature_min_value_to_limit =
-			ui_vars.ui8_motor_temperature_min_value_to_limit;
-	rt_vars.ui8_motor_temperature_max_value_to_limit =
-			ui_vars.ui8_motor_temperature_max_value_to_limit;
 	rt_vars.ui8_offroad_feature_enabled = ui_vars.ui8_offroad_feature_enabled;
 	rt_vars.ui8_offroad_enabled_on_startup =
 			ui_vars.ui8_offroad_enabled_on_startup;
@@ -664,7 +674,6 @@ void copy_rt_to_ui_vars(void) {
   rt_vars.ui8_torque_sensor_calibration_feature_enabled = ui_vars.ui8_torque_sensor_calibration_feature_enabled;
   rt_vars.ui8_torque_sensor_calibration_pedal_ground = ui_vars.ui8_torque_sensor_calibration_pedal_ground;
 
-  rt_vars.ui8_street_mode_enabled = ui_vars.ui8_street_mode_enabled;
   rt_vars.ui8_street_mode_speed_limit = ui_vars.ui8_street_mode_speed_limit;
 
   rt_vars.ui8_pedal_cadence_fast_stop = ui_vars.ui8_pedal_cadence_fast_stop;

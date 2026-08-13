@@ -25,21 +25,21 @@
 // 0x41: street-mode trim — removed enabled_on_startup, power_limit(_div25),
 // throttle_enabled, hotkey_enabled. Kept function_enabled, enabled, speed_limit
 // (speed_limit to be wired to the Bafang WRITE_SPEED_LIMIT command later).
-#define EEPROM_MIN_COMPAT_VERSION 0x41
-#define EEPROM_VERSION 0x41
+// 0x42: menu restructure — added ble_broadcast_enabled, removed street_mode_function/enabled,
+// wheel_max_speed, ramp_up_amps, temperature_limit fields.
+#define EEPROM_MIN_COMPAT_VERSION 0x42
+#define EEPROM_VERSION 0x42
 
 typedef struct eeprom_data {
 	uint8_t eeprom_version; // Used to detect changes in eeprom encoding, if != EEPROM_VERSION we will not use it
 
 	uint8_t ui8_assist_level;
 	uint16_t ui16_wheel_perimeter;
-	uint8_t ui8_wheel_max_speed;
 	uint8_t ui8_units_type;
 	uint8_t ui8_time_field_enable;
 	uint8_t ui8_target_max_battery_power_div25;
   uint8_t ui8_motor_current_min_adc;
   uint8_t ui8_field_weakening;
-	uint8_t ui8_ramp_up_amps_per_second_x10;
 	uint8_t ui8_motor_type;
 	uint8_t ui8_motor_current_control_mode;
 	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
@@ -51,9 +51,6 @@ typedef struct eeprom_data {
 	uint16_t ui16_startup_motor_power_boost_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_startup_motor_power_boost_time;
 	uint8_t ui8_startup_motor_power_boost_fade_time;
-	uint8_t ui8_temperature_limit_feature_enabled;
-	uint8_t ui8_motor_temperature_min_value_to_limit;
-	uint8_t ui8_motor_temperature_max_value_to_limit;
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
@@ -79,8 +76,6 @@ typedef struct eeprom_data {
 	uint8_t x_axis_scale; // x axis scale
 	uint8_t showNextScreenIndex;
 
-  uint8_t ui8_street_mode_function_enabled;
-  uint8_t ui8_street_mode_enabled;
   uint8_t ui8_street_mode_speed_limit;
 
   uint8_t ui8_pedal_cadence_fast_stop;
@@ -101,6 +96,8 @@ typedef struct eeprom_data {
 
   uint8_t ui8_motor_power_option; // 0=250W 1=500W 2=750W 3=1000W
 
+  uint8_t ui8_ble_broadcast_enabled; // 0 = mute BLE telemetry notifications, 1 = broadcast
+
 // FIXME align to 32 bit value by end of structure and pack other fields
 } eeprom_data_t;
 
@@ -110,12 +107,11 @@ typedef struct eeprom_data {
 // Bafang PAS exposes a fixed choice of level counts: 3, 5 or 9.
 #define DEFAULT_VALUE_NUMBER_OF_ASSIST_LEVELS                       9
 #define DEFAULT_VALUE_WHEEL_PERIMETER                               2100 // 27.5'' wheel: 2100mm perimeter
-#define DEFAULT_VALUE_WHEEL_MAX_SPEED                               50
 #define DEFAULT_VALUE_UNITS_TYPE                                    0 // 0 = km/h
 #define DEAFULT_VALUE_TIME_FIELD                                    1 // 1 i show clock
 #define DEFAULT_VALUE_MOTOR_POWER_OPTION                            3  // 3 = 1000W (BBSHD stock)
+#define DEFAULT_VALUE_BLE_BROADCAST_ENABLED                         1  // on by default
 #define DEFAULT_VALUE_CURRENT_MIN_ADC                               1 // 1 unit, 0.156 A
-#define DEFAULT_VALUE_RAMP_UP_AMPS_PER_SECOND_X10                   80 // 8.0 amps per second ramp up
 #define DEFAULT_VALUE_TARGET_MAX_BATTERY_POWER                      60 // e.g. 20 = 20 * 25 = 500, 0 is disabled
 #define DEFAULT_VALUE_MOTOR_CURRENT_CONTROL_MODE                    1 // 0 power; 1 torque
 #define DEFAULT_VALUE_MOTOR_TYPE                                    0 // 0 = 48V
@@ -185,9 +181,6 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_20     140
 #define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_TIME                20 // 2.0 seconds
 #define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FADE_TIME           35 // 3.5 seconds
-#define DEFAULT_VALUE_MOTOR_TEMPERATURE_FEATURE_ENABLE              0
-#define DEFAULT_VALUE_MOTOR_TEMPERATURE_MIN_VALUE_LIMIT             75 // 75 degrees celsius
-#define DEFAULT_VALUE_MOTOR_TEMPERATURE_MAX_VALUE_LIMIT             85 // 85 degrees celsius
 #define DEFAULT_VALUE_LCD_POWER_OFF_TIME                            60 // 60 minutes, each unit 1 minute
 #define DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS                   100 // 8 = 40%
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
@@ -199,8 +192,6 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
 #define DEFAULT_VALUE_BUTTONS_UP_DOWN_INVERT                        0 // regular state
 #define DEFAULT_VALUE_X_AXIS_SCALE                                  0 // 15m
-#define DEFAULT_STREET_MODE_FUNCTION_ENABLE                         0 // disabled
-#define DEFAULT_STREET_MODE_ENABLE                                  0 // disabled
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h
 #define DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE                      0 // disabled
 #define DEFAULT_COAST_BRAKE_ADC                                     15 // 15: tested by plpetrov user on 28.04.2020:
