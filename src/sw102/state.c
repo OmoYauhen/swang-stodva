@@ -24,14 +24,8 @@
 uint8_t ui8_g_battery_soc;
 volatile uint8_t ui8_g_motorVariablesStabilized = 0;
 
-// Skip the TSDZ2 boot handshake: no ALIVE query, no firmware-version query,
-// no CONFIGURATIONS exchange. The Bafang protocol has no such handshake
-// (display is master, motor never speaks first), so those TSDZ2-specific
-// states would otherwise deadlock the display at the boot animation forever.
-// The RX/TX code in the READY state runs the normal protocol loop.
-volatile motor_init_state_t g_motor_init_state = MOTOR_INIT_READY;
-volatile motor_init_state_config_t g_motor_init_state_conf = MOTOR_INIT_CONFIG_SEND_CONFIG;
-volatile motor_init_status_t ui8_g_motor_init_status = MOTOR_INIT_STATUS_RESET;
+// Bafang display is master and the motor never speaks first, so no boot
+// handshake is needed — we drop straight into the normal protocol loop.
 
 tsdz2_firmware_version_t g_tsdz2_firmware_version = { 0xff, 0, 0 };
 
@@ -314,9 +308,6 @@ static void bafang_synth_wheel_ticks(void) {
 }
 
 
-void ui_motor_stabilized();
-void ui_show_motor_status(motor_init_state_t state);
-
 rt_vars_t rt_vars;
 ui_vars_t ui_vars;
 
@@ -538,12 +529,9 @@ uint8_t rt_first_time_management(void) {
 	uint8_t ui8_status = 0;
 
   // wait 5 seconds to help motor variables data stabilize
-  if (ui8_g_motorVariablesStabilized == 0 &&
-      ((g_motor_init_state == MOTOR_INIT_READY) ||
-      (g_motor_init_state == MOTOR_INIT_SIMULATING)))
+  if (ui8_g_motorVariablesStabilized == 0)
     if (++ui32_counter > 50) {
       ui8_g_motorVariablesStabilized = 1;
-      ui_motor_stabilized();
     }
 
 	// don't update LCD until we've received the first few replies from the motor
@@ -729,7 +717,7 @@ void communications(void) {
     }
   }
 
-  if (!bafang_awaiting_reply && g_motor_init_state == MOTOR_INIT_READY) {
+  if (!bafang_awaiting_reply) {
     // WRITEs take priority over the next READ. If a state change is pending
     // (user just changed assist level, toggled lights, held walk assist),
     // send that first and skip this tick's READ — we'll pick up where the

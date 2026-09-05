@@ -5,38 +5,6 @@
 
 #define ASSIST_LEVEL_NUMBER 20
 
-typedef enum {
-  MOTOR_INIT_GET_MOTOR_ALIVE,
-  MOTOR_INIT_WAIT_MOTOR_ALIVE,
-  MOTOR_INIT_GET_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_WAIT_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_GOT_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_ERROR_GET_FIRMWARE_VERSION,
-  MOTOR_INIT_RECEIVED_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_ERROR_FIRMWARE_VERSION,
-  MOTOR_INIT_SET_CONFIGURATIONS,
-  MOTOR_INIT_WAIT_CONFIGURATIONS_OK,
-  MOTOR_INIT_WAIT_GOT_CONFIGURATIONS_OK,
-  MOTOR_INIT_ERROR_SET_CONFIGURATIONS,
-  MOTOR_INIT_ERROR,
-  MOTOR_INIT_READY,
-  MOTOR_INIT_SIMULATING,
-} motor_init_state_t;
-
-typedef enum {
-  MOTOR_INIT_CONFIG_SEND_CONFIG,
-  MOTOR_INIT_CONFIG_GET_STATUS,
-  MOTOR_INIT_CONFIG_CHECK_STATUS,
-} motor_init_state_config_t;
-
-typedef enum {
-  MOTOR_INIT_STATUS_RESET = 0,
-  MOTOR_INIT_STATUS_GOT_CONFIG = 1,
-  MOTOR_INIT_STATUS_INIT_OK = 2,
-} motor_init_status_t;
-
-extern volatile motor_init_state_t g_motor_init_state;
-
 typedef struct rt_vars_struct {
 	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
@@ -354,8 +322,6 @@ void prepare_torque_sensor_calibration_table(void);
 extern uint8_t ui8_g_battery_soc;
 
 extern tsdz2_firmware_version_t g_tsdz2_firmware_version;
-
-extern volatile motor_init_status_t ui8_g_motor_init_status;
 
 // Live-parsed Bafang display-protocol state, populated by bafang_parse_reply()
 // in state.c. Exposed here so the Technical config screen can render its

@@ -11,9 +11,8 @@ DEFINE_IMAGE(sparkles);
 extern const struct screen screen_main;
 
 // Show the boot screen until the motor sends its first packet. The Bafang
-// protocol has no boot handshake (g_motor_init_state is READY from the start),
-// so the transition is keyed off the first successfully parsed reply instead
-// of the motor-init state machine.
+// protocol has no boot handshake, so the transition is keyed off the first
+// successfully parsed reply.
 static void boot_idle()
 {
 	if (g_bafang.rx_count > 0) {
@@ -25,10 +24,6 @@ static void boot_idle()
 	// image is 64px wide (full screen width); center it vertically on 128px
 	img_draw(&img_sparkles, (64 - img_sparkles.w) / 2, (128 - img_sparkles.h) / 2);
 	lcd_refresh();
-}
-
-void ui_show_motor_status()
-{
 }
 
 const struct screen screen_boot = {
