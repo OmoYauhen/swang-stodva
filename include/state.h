@@ -76,21 +76,12 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_walk_assist;
 	uint8_t ui8_offroad_mode;
 
-  uint8_t ui8_torque_sensor_calibration_feature_enabled;
-  uint8_t ui8_torque_sensor_calibration_pedal_ground;
-  uint16_t ui16_torque_sensor_calibration_table_left[8][2];
-  uint16_t ui16_torque_sensor_calibration_table_right[8][2];
-
   uint8_t ui8_street_mode_speed_limit;
 
   uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_coast_brake_adc;
   uint8_t ui8_adc_lights_current_offset;
   uint16_t ui16_adc_battery_current;
   uint8_t ui8_throttle_virtual;
-  uint8_t ui8_torque_sensor_filter;
-  uint8_t ui8_torque_sensor_adc_threshold;
-  uint8_t ui8_coast_brake_enable;
 } rt_vars_t;
 
 /* Selector positions for customizable fields
@@ -178,11 +169,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_walk_assist;
 	uint8_t ui8_offroad_mode;
 	uint8_t ui8_buttons_up_down_invert;
-
-	uint8_t ui8_torque_sensor_calibration_feature_enabled;
-	uint8_t ui8_torque_sensor_calibration_pedal_ground;
-	uint16_t ui16_torque_sensor_calibration_table_left[8][2];
-	uint16_t ui16_torque_sensor_calibration_table_right[8][2];
 
 	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
 	uint8_t graphs_field_selectors[3]; // 3 screen main pages
@@ -275,14 +261,10 @@ typedef struct ui_vars_struct {
   uint8_t var_motor_foc_threshold_min;
 
   uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_coast_brake_adc;
   uint8_t ui8_adc_lights_current_offset;
   uint16_t ui16_adc_battery_current;
   uint8_t ui8_throttle_virtual;
   uint8_t ui8_throttle_virtual_step;
-  uint8_t ui8_torque_sensor_filter;
-  uint8_t ui8_torque_sensor_adc_threshold;
-  uint8_t ui8_coast_brake_enable;
 } ui_vars_t;
 
 ui_vars_t* get_ui_vars(void);
@@ -310,8 +292,6 @@ void lcd_power_off(uint8_t updateDistanceOdo); // provided by LCD
 
 /// Set correct backlight brightness for current headlight state
 void set_lcd_backlight();
-
-void prepare_torque_sensor_calibration_table(void);
 
 extern uint8_t ui8_g_battery_soc;
 

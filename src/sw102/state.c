@@ -654,21 +654,11 @@ void copy_rt_to_ui_vars(void) {
 			ui_vars.ui8_offroad_power_limit_enabled;
 	rt_vars.ui8_offroad_power_limit_div25 =
 			ui_vars.ui8_offroad_power_limit_div25;
-  rt_vars.ui8_torque_sensor_calibration_pedal_ground =
-      ui_vars.ui8_torque_sensor_calibration_pedal_ground;
-
-  rt_vars.ui8_torque_sensor_calibration_feature_enabled = ui_vars.ui8_torque_sensor_calibration_feature_enabled;
-  rt_vars.ui8_torque_sensor_calibration_pedal_ground = ui_vars.ui8_torque_sensor_calibration_pedal_ground;
-
   rt_vars.ui8_street_mode_speed_limit = ui_vars.ui8_street_mode_speed_limit;
 
   rt_vars.ui8_pedal_cadence_fast_stop = ui_vars.ui8_pedal_cadence_fast_stop;
-  rt_vars.ui8_coast_brake_adc = ui_vars.ui8_coast_brake_adc;
   rt_vars.ui8_adc_lights_current_offset = ui_vars.ui8_adc_lights_current_offset;
   rt_vars.ui8_throttle_virtual = ui_vars.ui8_throttle_virtual;
-  rt_vars.ui8_torque_sensor_filter = ui_vars.ui8_torque_sensor_filter;
-  rt_vars.ui8_torque_sensor_adc_threshold = ui_vars.ui8_torque_sensor_adc_threshold;
-  rt_vars.ui8_coast_brake_enable = ui_vars.ui8_coast_brake_enable;
 }
 
 /// must be called from main() idle loop
@@ -749,37 +739,3 @@ void rt_processing(void)
   bafang_apply_directs();
 }
 
-void prepare_torque_sensor_calibration_table(void) {
-  static bool first_time = true;
-
-  // we need to make this atomic
-  rt_processing_stop();
-
-  // at the very first time, copy the ADC values from one table to the other
-  if (first_time) {
-    first_time = false;
-
-    for (uint8_t i = 0; i < 8; i++) {
-      rt_vars.ui16_torque_sensor_calibration_table_left[i][0] = ui_vars.ui16_torque_sensor_calibration_table_left[i][1];
-      rt_vars.ui16_torque_sensor_calibration_table_right[i][0] = ui_vars.ui16_torque_sensor_calibration_table_right[i][1];
-    }
-  }
-
-  // get the delta values of ADC steps per kg
-  for (uint8_t i = 1; i < 8; i++) {
-    // get the deltas x100
-    rt_vars.ui16_torque_sensor_calibration_table_left[i][1] =
-        ((ui_vars.ui16_torque_sensor_calibration_table_left[i][0] - ui_vars.ui16_torque_sensor_calibration_table_left[i - 1][0]) * 100) /
-        (ui_vars.ui16_torque_sensor_calibration_table_left[i][1] - ui_vars.ui16_torque_sensor_calibration_table_left[i - 1][1]);
-
-    rt_vars.ui16_torque_sensor_calibration_table_right[i][1] =
-        ((ui_vars.ui16_torque_sensor_calibration_table_right[i][0] - ui_vars.ui16_torque_sensor_calibration_table_right[i - 1][0]) * 100) /
-        (ui_vars.ui16_torque_sensor_calibration_table_right[i][1] - ui_vars.ui16_torque_sensor_calibration_table_right[i - 1][1]);
-  }
-  // very first table value need to the calculated here
-  rt_vars.ui16_torque_sensor_calibration_table_left[0][1] = rt_vars.ui16_torque_sensor_calibration_table_left[1][1]; // the first delta is equal the the second one
-  rt_vars.ui16_torque_sensor_calibration_table_right[0][1] = rt_vars.ui16_torque_sensor_calibration_table_right[1][1]; // the first delta is equal the the second one
-
-
-  rt_processing_start();
-}
