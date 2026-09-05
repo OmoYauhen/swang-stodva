@@ -293,12 +293,6 @@ extern ui_vars_t ui_vars;
 
 extern volatile uint8_t ui8_g_motorVariablesStabilized;
 
-typedef struct {
-  uint8_t major;
-  uint8_t minor;
-  uint8_t patch;
-} tsdz2_firmware_version_t;
-
 void rt_processing(void);
 void rt_processing_stop(void);
 void rt_processing_start(void);
@@ -320,8 +314,6 @@ void set_lcd_backlight();
 void prepare_torque_sensor_calibration_table(void);
 
 extern uint8_t ui8_g_battery_soc;
-
-extern tsdz2_firmware_version_t g_tsdz2_firmware_version;
 
 // Live-parsed Bafang display-protocol state, populated by bafang_parse_reply()
 // in state.c. Exposed here so the Technical config screen can render its

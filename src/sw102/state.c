@@ -27,8 +27,6 @@ volatile uint8_t ui8_g_motorVariablesStabilized = 0;
 // Bafang display is master and the motor never speaks first, so no boot
 // handshake is needed — we drop straight into the normal protocol loop.
 
-tsdz2_firmware_version_t g_tsdz2_firmware_version = { 0xff, 0, 0 };
-
 // ---- Bafang UART protocol (source: bbs-fw/src/firmware/extcom.c) -----------
 // The display is master. Every 100 ms tick we advance one step in a
 // round-robin of READ opcodes: send the 2-byte request, prime RX for the
