@@ -325,16 +325,3 @@ static void init_app_timers(void)
           gui_timer_timeout));
   APP_ERROR_CHECK(app_timer_start(gui_timer_id, GUI_INTERVAL, NULL));
 }
-
-void rt_graph_process()
-{
-}
-void ui_motor_stabilized()
-{
-}
-
-void set_conversions()
-{
-}
-
-uint8_t g_showNextScreenIndex, g_showNextScreenPreviousIndex;

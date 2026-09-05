@@ -733,7 +733,6 @@ void rt_processing(void)
   rt_low_pass_filter_pedal_cadence();
   rt_calc_odometer();
   rt_calc_trips();
-  rt_graph_process();
   /************************************************************************************************/
   rt_first_time_management();
   bafang_apply_directs();

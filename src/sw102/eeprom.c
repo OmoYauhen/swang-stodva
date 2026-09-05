@@ -184,8 +184,6 @@ void eeprom_init() {
 //	}
 
 	eeprom_init_variables();
-
-	set_conversions();
 }
 
 void eeprom_init_variables(void) {
@@ -250,8 +248,6 @@ void eeprom_init_variables(void) {
 	COPY_ARRAY(ui_vars, &m_eeprom_data, field_selectors);
 	COPY_ARRAY(ui_vars, &m_eeprom_data, graphs_field_selectors);
   ui_vars->ui8_buttons_up_down_invert = m_eeprom_data.ui8_buttons_up_down_invert;
-
-  g_showNextScreenIndex = m_eeprom_data.showNextScreenIndex;
 
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
@@ -341,8 +337,6 @@ void eeprom_write_variables(void) {
   COPY_ARRAY(&m_eeprom_data, ui_vars, graphs_field_selectors);
   m_eeprom_data.ui8_buttons_up_down_invert = ui_vars->ui8_buttons_up_down_invert;
 
-  m_eeprom_data.showNextScreenIndex = g_showNextScreenPreviousIndex;
-
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;
 
@@ -381,7 +375,6 @@ void eeprom_init_defaults(void)
       sizeof(m_eeprom_data_defaults));
 
   eeprom_init_variables();
-  set_conversions();
 
   flash_write_words(&m_eeprom_data, sizeof(m_eeprom_data) / sizeof(uint32_t));
 }

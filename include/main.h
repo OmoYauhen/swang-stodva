@@ -27,15 +27,6 @@ uint32_t get_time_base_counter_1ms();
 void SW102_rt_processing_stop(void);
 void SW102_rt_processing_start(void);
 
-// Recompute unit-conversion flags (kph/mph, C/F, kg/lb); defined in main.c.
-void set_conversions(void);
-
-// Per-tick graph bookkeeping; defined in main.c (real hardware has no graphs, so it is a stub).
-void rt_graph_process(void);
-
-// Index of the currently shown main screen; defined in main.c, persisted to EEPROM.
-extern uint8_t g_showNextScreenIndex, g_showNextScreenPreviousIndex;
-
 extern Button buttonM, buttonDWN, buttonUP, buttonPWR;
 
 #endif /* INCLUDE_MAIN_H_ */
