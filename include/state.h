@@ -68,12 +68,10 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_assist_level;
 	uint8_t ui8_number_of_assist_levels;
 	uint16_t ui16_wheel_perimeter;
-	uint8_t ui8_wheel_max_speed;
 	uint8_t ui8_units_type;
 	uint8_t ui8_target_max_battery_power_div25;
   uint8_t ui8_motor_current_min_adc;
   uint8_t ui8_field_weakening;
-	uint8_t ui8_ramp_up_amps_per_second_x10;
 	uint8_t ui8_motor_type;
 	uint8_t ui8_motor_current_control_mode;
 	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
@@ -86,9 +84,6 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_startup_motor_power_boost_time;
 	uint8_t ui8_startup_motor_power_boost_fade_time;
 	uint16_t ui16_startup_motor_power_boost_factor[ASSIST_LEVEL_NUMBER];
-	uint8_t ui8_temperature_limit_feature_enabled;
-	uint8_t ui8_motor_temperature_min_value_to_limit;
-	uint8_t ui8_motor_temperature_max_value_to_limit;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint8_t ui8_offroad_feature_enabled;
@@ -118,7 +113,6 @@ typedef struct rt_vars_struct {
   uint16_t ui16_torque_sensor_calibration_table_left[8][2];
   uint16_t ui16_torque_sensor_calibration_table_right[8][2];
 
-  uint8_t ui8_street_mode_enabled;
   uint8_t ui8_street_mode_speed_limit;
 
   uint8_t ui8_pedal_cadence_fast_stop;
@@ -170,14 +164,13 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_assist_level;
 	uint8_t ui8_number_of_assist_levels;
 	uint16_t ui16_wheel_perimeter;
-	uint16_t wheel_max_speed_x10;
 	uint8_t ui8_units_type;
 	uint8_t ui8_time_field_enable;
 	uint8_t ui8_target_max_battery_power_div25;
 	uint8_t ui8_motor_power_option; // index into motor_power_options_w[]: 0=250W 1=500W 2=750W 3=1000W
+	uint8_t ui8_ble_broadcast_enabled; // 0 = mute BLE telemetry notifications, 1 = broadcast
 	uint8_t ui8_motor_current_min_adc;
 	uint8_t ui8_field_weakening;
-	uint8_t ui8_ramp_up_amps_per_second_x10;
 	uint8_t ui8_motor_type;
 	uint8_t ui8_motor_current_control_mode;
 	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
@@ -190,9 +183,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_startup_motor_power_boost_time;
 	uint8_t ui8_startup_motor_power_boost_fade_time;
 	uint16_t ui16_startup_motor_power_boost_factor[ASSIST_LEVEL_NUMBER];
-	uint8_t ui8_temperature_limit_feature_enabled;
-	uint8_t ui8_motor_temperature_min_value_to_limit;
-	uint8_t ui8_motor_temperature_max_value_to_limit;
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
@@ -229,8 +219,6 @@ typedef struct ui_vars_struct {
 	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
 	uint8_t graphs_field_selectors[3]; // 3 screen main pages
 
-	uint8_t ui8_street_mode_function_enabled;
-	uint8_t ui8_street_mode_enabled;
 	uint8_t ui8_street_mode_speed_limit;
 
   uint16_t var_speed_graph_auto_max_min;

@@ -348,6 +348,12 @@ static void bas_init() {
 #define BLE_UUID_TELEMETRY_CHAR    0x0002
 #define TELEMETRY_PACKET_VERSION   1
 
+// Telemetry notifications are paced by their own timer rather than the 100 ms
+// main loop: a link can only carry one notification per connection interval, so
+// pushing faster just floods the SoftDevice TX queue (BLE_ERROR_NO_TX_PACKETS)
+// and drops packets. 1000 ms >= MAX_CONN_INTERVAL, so every push is deliverable.
+#define TELEMETRY_MEAS_INTERVAL APP_TIMER_TICKS(1000, APP_TIMER_PRESCALER)
+
 // Base UUID in little-endian byte order (the 0x0000 at [12..13] is the 16-bit slot).
 static const ble_uuid128_t telemetry_base_uuid =
     {{0x1b, 0xc5, 0xd5, 0xa5, 0x02, 0x00, 0x8f, 0xa5,
@@ -369,6 +375,16 @@ typedef struct __attribute__((packed)) {
 static uint8_t                  m_telemetry_uuid_type;
 static uint16_t                 m_telemetry_service_handle;
 static ble_gatts_char_handles_t m_telemetry_char_handles;
+
+APP_TIMER_DEF(m_telemetry_timer_id);                                                /**< Telemetry notification timer. */
+
+static void telemetry_update(void);
+
+static void telemetry_meas_timeout_handler(void * p_context)
+{
+    UNUSED_PARAMETER(p_context);
+    telemetry_update();
+}
 
 static void telemetry_init(void)
 {
@@ -418,11 +434,20 @@ static void telemetry_init(void)
                                                     &char_md,
                                                     &attr_char_value,
                                                     &m_telemetry_char_handles));
+
+    APP_ERROR_CHECK(app_timer_create(&m_telemetry_timer_id,
+                                     APP_TIMER_MODE_REPEATED,
+                                     telemetry_meas_timeout_handler));
+
+    APP_ERROR_CHECK(app_timer_start(m_telemetry_timer_id, TELEMETRY_MEAS_INTERVAL, NULL));
 }
 
 // Fill and notify the telemetry packet from the current live values.
 static void telemetry_update(void)
 {
+    if (ui_vars.ui8_ble_broadcast_enabled == 0)
+        return;
+
     if (m_conn_handle == BLE_CONN_HANDLE_INVALID)
         return;
 
@@ -879,11 +904,8 @@ void ble_init(void)
   APP_ERROR_CHECK(ble_advertising_start(BLE_ADV_MODE_FAST));
 }
 
-// Called every 100 ms from the main loop.
+// Called every 100 ms from the main loop. BLE pushes (battery, CSC, telemetry)
+// are all paced by their own app_timers now, so there is nothing to do per tick.
 void send_bluetooth(rt_vars_t *rt_vars) {
  UNUSED_PARAMETER(rt_vars);
-
-#ifdef BLE_TELEMETRY
- telemetry_update();
-#endif
 }
