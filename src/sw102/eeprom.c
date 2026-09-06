@@ -139,48 +139,10 @@ const eeprom_data_t m_eeprom_data_defaults = {
   .x_axis_scale = DEFAULT_VALUE_X_AXIS_SCALE,
   .ui8_buttons_up_down_invert = DEFAULT_VALUE_BUTTONS_UP_DOWN_INVERT,
 
-  .ui16_torque_sensor_calibration_table_left[0][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_1,
-  .ui16_torque_sensor_calibration_table_left[0][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_1,
-  .ui16_torque_sensor_calibration_table_left[1][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_2,
-  .ui16_torque_sensor_calibration_table_left[1][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_2,
-  .ui16_torque_sensor_calibration_table_left[2][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_3,
-  .ui16_torque_sensor_calibration_table_left[2][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_3,
-  .ui16_torque_sensor_calibration_table_left[3][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_4,
-  .ui16_torque_sensor_calibration_table_left[3][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_4,
-  .ui16_torque_sensor_calibration_table_left[4][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_5,
-  .ui16_torque_sensor_calibration_table_left[4][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_5,
-  .ui16_torque_sensor_calibration_table_left[5][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_6,
-  .ui16_torque_sensor_calibration_table_left[5][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_6,
-  .ui16_torque_sensor_calibration_table_left[6][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_7,
-  .ui16_torque_sensor_calibration_table_left[6][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_7,
-  .ui16_torque_sensor_calibration_table_left[7][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_WEIGHT_8,
-  .ui16_torque_sensor_calibration_table_left[7][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_LEFT_ADC_8,
-
-  .ui16_torque_sensor_calibration_table_right[0][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_1,
-  .ui16_torque_sensor_calibration_table_right[0][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_1,
-  .ui16_torque_sensor_calibration_table_right[1][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_2,
-  .ui16_torque_sensor_calibration_table_right[1][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_2,
-  .ui16_torque_sensor_calibration_table_right[2][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_3,
-  .ui16_torque_sensor_calibration_table_right[2][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_3,
-  .ui16_torque_sensor_calibration_table_right[3][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_4,
-  .ui16_torque_sensor_calibration_table_right[3][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_4,
-  .ui16_torque_sensor_calibration_table_right[4][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_5,
-  .ui16_torque_sensor_calibration_table_right[4][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_5,
-  .ui16_torque_sensor_calibration_table_right[5][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_6,
-  .ui16_torque_sensor_calibration_table_right[5][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_6,
-  .ui16_torque_sensor_calibration_table_right[6][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_7,
-  .ui16_torque_sensor_calibration_table_right[6][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_7,
-  .ui16_torque_sensor_calibration_table_right[7][0] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_WEIGHT_8,
-  .ui16_torque_sensor_calibration_table_right[7][1] = DEFAULT_TORQUE_SENSOR_CALIBRATION_RIGHT_ADC_8,
-
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
   .ui8_pedal_cadence_fast_stop = DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE,
-  .ui8_coast_brake_adc = DEFAULT_COAST_BRAKE_ADC,
   .ui8_adc_lights_current_offset = DEFAULT_ADC_LIGHTS_CURRENT_OFFSET,
   .ui8_throttle_virtual_step = DEFAULT_THROTTLE_VIRTUAL_STEP,
-  .ui8_torque_sensor_filter = DEFAULT_TORQUE_SENSOR_FILTER,
-  .ui8_torque_sensor_adc_threshold = DEFAULT_TORQUE_SENSOR_ADC_THRESHOLD,
-  .ui8_coast_brake_enable = DEFAULT_COAST_BRAKE_ENABLE,
 
   .ui32_trip_a_distance_x1000 = DEFAULT_VALUE_TRIP_DISTANCE,
   .ui32_trip_a_time = DEFAULT_VALUE_TRIP_TIME,
@@ -222,11 +184,6 @@ void eeprom_init() {
 //	}
 
 	eeprom_init_variables();
-
-	set_conversions();
-
-	// prepare torque_sensor_calibration_table as it will be used at begin to init the motor
-	prepare_torque_sensor_calibration_table();
 }
 
 void eeprom_init_variables(void) {
@@ -291,37 +248,16 @@ void eeprom_init_variables(void) {
 	COPY_ARRAY(ui_vars, &m_eeprom_data, field_selectors);
 	COPY_ARRAY(ui_vars, &m_eeprom_data, graphs_field_selectors);
   ui_vars->ui8_buttons_up_down_invert = m_eeprom_data.ui8_buttons_up_down_invert;
-  ui_vars->ui8_torque_sensor_calibration_pedal_ground = m_eeprom_data.ui8_torque_sensor_calibration_pedal_ground;
-
-
-  ui_vars->ui8_torque_sensor_calibration_feature_enabled = m_eeprom_data.ui8_torque_sensor_calibration_feature_enabled;
-  ui_vars->ui8_torque_sensor_calibration_pedal_ground = m_eeprom_data.ui8_torque_sensor_calibration_pedal_ground;
-  for (uint8_t i = 0; i < 8; i++) {
-    ui_vars->ui16_torque_sensor_calibration_table_left[i][0] = m_eeprom_data.ui16_torque_sensor_calibration_table_left[i][0];
-    ui_vars->ui16_torque_sensor_calibration_table_left[i][1] = m_eeprom_data.ui16_torque_sensor_calibration_table_left[i][1];
-    ui_vars->ui16_torque_sensor_calibration_table_right[i][0] = m_eeprom_data.ui16_torque_sensor_calibration_table_right[i][0];
-    ui_vars->ui16_torque_sensor_calibration_table_right[i][1] = m_eeprom_data.ui16_torque_sensor_calibration_table_right[i][1];
-  }
-
-  g_showNextScreenIndex = m_eeprom_data.showNextScreenIndex;
 
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
 
   ui_vars->ui8_pedal_cadence_fast_stop =
       m_eeprom_data.ui8_pedal_cadence_fast_stop;
-  ui_vars->ui8_coast_brake_adc =
-      m_eeprom_data.ui8_coast_brake_adc;
   ui_vars->ui8_adc_lights_current_offset =
       m_eeprom_data.ui8_adc_lights_current_offset;
   ui_vars->ui8_throttle_virtual_step =
       m_eeprom_data.ui8_throttle_virtual_step;
-  ui_vars->ui8_torque_sensor_filter =
-      m_eeprom_data.ui8_torque_sensor_filter;
-  ui_vars->ui8_torque_sensor_adc_threshold =
-      m_eeprom_data.ui8_torque_sensor_adc_threshold;
-  ui_vars->ui8_coast_brake_enable =
-      m_eeprom_data.ui8_coast_brake_enable;
 
 
   // trip A values should reside on RT vars
@@ -401,35 +337,15 @@ void eeprom_write_variables(void) {
   COPY_ARRAY(&m_eeprom_data, ui_vars, graphs_field_selectors);
   m_eeprom_data.ui8_buttons_up_down_invert = ui_vars->ui8_buttons_up_down_invert;
 
-  m_eeprom_data.ui8_torque_sensor_calibration_feature_enabled = ui_vars->ui8_torque_sensor_calibration_feature_enabled;
-  m_eeprom_data.ui8_torque_sensor_calibration_pedal_ground = ui_vars->ui8_torque_sensor_calibration_pedal_ground;
-  for (uint8_t i = 0; i < 8; i++) {
-    m_eeprom_data.ui16_torque_sensor_calibration_table_left[i][0] = ui_vars->ui16_torque_sensor_calibration_table_left[i][0];
-    m_eeprom_data.ui16_torque_sensor_calibration_table_left[i][1] = ui_vars->ui16_torque_sensor_calibration_table_left[i][1];
-    m_eeprom_data.ui16_torque_sensor_calibration_table_right[i][0] = ui_vars->ui16_torque_sensor_calibration_table_right[i][0];
-    m_eeprom_data.ui16_torque_sensor_calibration_table_right[i][1] = ui_vars->ui16_torque_sensor_calibration_table_right[i][1];
-  }
-
-
-  m_eeprom_data.showNextScreenIndex = g_showNextScreenPreviousIndex;
-
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;
 
   m_eeprom_data.ui8_pedal_cadence_fast_stop =
       ui_vars->ui8_pedal_cadence_fast_stop;
-  m_eeprom_data.ui8_coast_brake_adc =
-      ui_vars->ui8_coast_brake_adc;
   m_eeprom_data.ui8_adc_lights_current_offset =
       ui_vars->ui8_adc_lights_current_offset;
   m_eeprom_data.ui8_throttle_virtual_step =
       ui_vars->ui8_throttle_virtual_step;
-  m_eeprom_data.ui8_torque_sensor_filter =
-      ui_vars->ui8_torque_sensor_filter;
-  m_eeprom_data.ui8_torque_sensor_adc_threshold =
-      ui_vars->ui8_torque_sensor_adc_threshold;
-  m_eeprom_data.ui8_coast_brake_enable =
-      ui_vars->ui8_coast_brake_enable;
 
 
   m_eeprom_data.ui32_trip_a_distance_x1000 =
@@ -459,9 +375,6 @@ void eeprom_init_defaults(void)
       sizeof(m_eeprom_data_defaults));
 
   eeprom_init_variables();
-  set_conversions();
-  // prepare torque_sensor_calibration_table as it will be used at begin to init the motor
-  prepare_torque_sensor_calibration_table();
 
   flash_write_words(&m_eeprom_data, sizeof(m_eeprom_data) / sizeof(uint32_t));
 }

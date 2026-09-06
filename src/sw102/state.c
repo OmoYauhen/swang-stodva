@@ -24,16 +24,8 @@
 uint8_t ui8_g_battery_soc;
 volatile uint8_t ui8_g_motorVariablesStabilized = 0;
 
-// Skip the TSDZ2 boot handshake: no ALIVE query, no firmware-version query,
-// no CONFIGURATIONS exchange. The Bafang protocol has no such handshake
-// (display is master, motor never speaks first), so those TSDZ2-specific
-// states would otherwise deadlock the display at the boot animation forever.
-// The RX/TX code in the READY state runs the normal protocol loop.
-volatile motor_init_state_t g_motor_init_state = MOTOR_INIT_READY;
-volatile motor_init_state_config_t g_motor_init_state_conf = MOTOR_INIT_CONFIG_SEND_CONFIG;
-volatile motor_init_status_t ui8_g_motor_init_status = MOTOR_INIT_STATUS_RESET;
-
-tsdz2_firmware_version_t g_tsdz2_firmware_version = { 0xff, 0, 0 };
+// Bafang display is master and the motor never speaks first, so no boot
+// handshake is needed — we drop straight into the normal protocol loop.
 
 // ---- Bafang UART protocol (source: bbs-fw/src/firmware/extcom.c) -----------
 // The display is master. Every 100 ms tick we advance one step in a
@@ -314,9 +306,6 @@ static void bafang_synth_wheel_ticks(void) {
 }
 
 
-void ui_motor_stabilized();
-void ui_show_motor_status(motor_init_state_t state);
-
 rt_vars_t rt_vars;
 ui_vars_t ui_vars;
 
@@ -538,12 +527,9 @@ uint8_t rt_first_time_management(void) {
 	uint8_t ui8_status = 0;
 
   // wait 5 seconds to help motor variables data stabilize
-  if (ui8_g_motorVariablesStabilized == 0 &&
-      ((g_motor_init_state == MOTOR_INIT_READY) ||
-      (g_motor_init_state == MOTOR_INIT_SIMULATING)))
+  if (ui8_g_motorVariablesStabilized == 0)
     if (++ui32_counter > 50) {
       ui8_g_motorVariablesStabilized = 1;
-      ui_motor_stabilized();
     }
 
 	// don't update LCD until we've received the first few replies from the motor
@@ -668,21 +654,11 @@ void copy_rt_to_ui_vars(void) {
 			ui_vars.ui8_offroad_power_limit_enabled;
 	rt_vars.ui8_offroad_power_limit_div25 =
 			ui_vars.ui8_offroad_power_limit_div25;
-  rt_vars.ui8_torque_sensor_calibration_pedal_ground =
-      ui_vars.ui8_torque_sensor_calibration_pedal_ground;
-
-  rt_vars.ui8_torque_sensor_calibration_feature_enabled = ui_vars.ui8_torque_sensor_calibration_feature_enabled;
-  rt_vars.ui8_torque_sensor_calibration_pedal_ground = ui_vars.ui8_torque_sensor_calibration_pedal_ground;
-
   rt_vars.ui8_street_mode_speed_limit = ui_vars.ui8_street_mode_speed_limit;
 
   rt_vars.ui8_pedal_cadence_fast_stop = ui_vars.ui8_pedal_cadence_fast_stop;
-  rt_vars.ui8_coast_brake_adc = ui_vars.ui8_coast_brake_adc;
   rt_vars.ui8_adc_lights_current_offset = ui_vars.ui8_adc_lights_current_offset;
   rt_vars.ui8_throttle_virtual = ui_vars.ui8_throttle_virtual;
-  rt_vars.ui8_torque_sensor_filter = ui_vars.ui8_torque_sensor_filter;
-  rt_vars.ui8_torque_sensor_adc_threshold = ui_vars.ui8_torque_sensor_adc_threshold;
-  rt_vars.ui8_coast_brake_enable = ui_vars.ui8_coast_brake_enable;
 }
 
 /// must be called from main() idle loop
@@ -729,7 +705,7 @@ void communications(void) {
     }
   }
 
-  if (!bafang_awaiting_reply && g_motor_init_state == MOTOR_INIT_READY) {
+  if (!bafang_awaiting_reply) {
     // WRITEs take priority over the next READ. If a state change is pending
     // (user just changed assist level, toggled lights, held walk assist),
     // send that first and skip this tick's READ — we'll pick up where the
@@ -757,43 +733,8 @@ void rt_processing(void)
   rt_low_pass_filter_pedal_cadence();
   rt_calc_odometer();
   rt_calc_trips();
-  rt_graph_process();
   /************************************************************************************************/
   rt_first_time_management();
   bafang_apply_directs();
 }
 
-void prepare_torque_sensor_calibration_table(void) {
-  static bool first_time = true;
-
-  // we need to make this atomic
-  rt_processing_stop();
-
-  // at the very first time, copy the ADC values from one table to the other
-  if (first_time) {
-    first_time = false;
-
-    for (uint8_t i = 0; i < 8; i++) {
-      rt_vars.ui16_torque_sensor_calibration_table_left[i][0] = ui_vars.ui16_torque_sensor_calibration_table_left[i][1];
-      rt_vars.ui16_torque_sensor_calibration_table_right[i][0] = ui_vars.ui16_torque_sensor_calibration_table_right[i][1];
-    }
-  }
-
-  // get the delta values of ADC steps per kg
-  for (uint8_t i = 1; i < 8; i++) {
-    // get the deltas x100
-    rt_vars.ui16_torque_sensor_calibration_table_left[i][1] =
-        ((ui_vars.ui16_torque_sensor_calibration_table_left[i][0] - ui_vars.ui16_torque_sensor_calibration_table_left[i - 1][0]) * 100) /
-        (ui_vars.ui16_torque_sensor_calibration_table_left[i][1] - ui_vars.ui16_torque_sensor_calibration_table_left[i - 1][1]);
-
-    rt_vars.ui16_torque_sensor_calibration_table_right[i][1] =
-        ((ui_vars.ui16_torque_sensor_calibration_table_right[i][0] - ui_vars.ui16_torque_sensor_calibration_table_right[i - 1][0]) * 100) /
-        (ui_vars.ui16_torque_sensor_calibration_table_right[i][1] - ui_vars.ui16_torque_sensor_calibration_table_right[i - 1][1]);
-  }
-  // very first table value need to the calculated here
-  rt_vars.ui16_torque_sensor_calibration_table_left[0][1] = rt_vars.ui16_torque_sensor_calibration_table_left[1][1]; // the first delta is equal the the second one
-  rt_vars.ui16_torque_sensor_calibration_table_right[0][1] = rt_vars.ui16_torque_sensor_calibration_table_right[1][1]; // the first delta is equal the the second one
-
-
-  rt_processing_start();
-}

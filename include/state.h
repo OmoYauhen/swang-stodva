@@ -5,38 +5,6 @@
 
 #define ASSIST_LEVEL_NUMBER 20
 
-typedef enum {
-  MOTOR_INIT_GET_MOTOR_ALIVE,
-  MOTOR_INIT_WAIT_MOTOR_ALIVE,
-  MOTOR_INIT_GET_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_WAIT_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_GOT_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_ERROR_GET_FIRMWARE_VERSION,
-  MOTOR_INIT_RECEIVED_MOTOR_FIRMWARE_VERSION,
-  MOTOR_INIT_ERROR_FIRMWARE_VERSION,
-  MOTOR_INIT_SET_CONFIGURATIONS,
-  MOTOR_INIT_WAIT_CONFIGURATIONS_OK,
-  MOTOR_INIT_WAIT_GOT_CONFIGURATIONS_OK,
-  MOTOR_INIT_ERROR_SET_CONFIGURATIONS,
-  MOTOR_INIT_ERROR,
-  MOTOR_INIT_READY,
-  MOTOR_INIT_SIMULATING,
-} motor_init_state_t;
-
-typedef enum {
-  MOTOR_INIT_CONFIG_SEND_CONFIG,
-  MOTOR_INIT_CONFIG_GET_STATUS,
-  MOTOR_INIT_CONFIG_CHECK_STATUS,
-} motor_init_state_config_t;
-
-typedef enum {
-  MOTOR_INIT_STATUS_RESET = 0,
-  MOTOR_INIT_STATUS_GOT_CONFIG = 1,
-  MOTOR_INIT_STATUS_INIT_OK = 2,
-} motor_init_status_t;
-
-extern volatile motor_init_state_t g_motor_init_state;
-
 typedef struct rt_vars_struct {
 	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
@@ -108,21 +76,12 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_walk_assist;
 	uint8_t ui8_offroad_mode;
 
-  uint8_t ui8_torque_sensor_calibration_feature_enabled;
-  uint8_t ui8_torque_sensor_calibration_pedal_ground;
-  uint16_t ui16_torque_sensor_calibration_table_left[8][2];
-  uint16_t ui16_torque_sensor_calibration_table_right[8][2];
-
   uint8_t ui8_street_mode_speed_limit;
 
   uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_coast_brake_adc;
   uint8_t ui8_adc_lights_current_offset;
   uint16_t ui16_adc_battery_current;
   uint8_t ui8_throttle_virtual;
-  uint8_t ui8_torque_sensor_filter;
-  uint8_t ui8_torque_sensor_adc_threshold;
-  uint8_t ui8_coast_brake_enable;
 } rt_vars_t;
 
 /* Selector positions for customizable fields
@@ -210,11 +169,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_walk_assist;
 	uint8_t ui8_offroad_mode;
 	uint8_t ui8_buttons_up_down_invert;
-
-	uint8_t ui8_torque_sensor_calibration_feature_enabled;
-	uint8_t ui8_torque_sensor_calibration_pedal_ground;
-	uint16_t ui16_torque_sensor_calibration_table_left[8][2];
-	uint16_t ui16_torque_sensor_calibration_table_right[8][2];
 
 	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
 	uint8_t graphs_field_selectors[3]; // 3 screen main pages
@@ -307,29 +261,19 @@ typedef struct ui_vars_struct {
   uint8_t var_motor_foc_threshold_min;
 
   uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_coast_brake_adc;
   uint8_t ui8_adc_lights_current_offset;
   uint16_t ui16_adc_battery_current;
   uint8_t ui8_throttle_virtual;
   uint8_t ui8_throttle_virtual_step;
-  uint8_t ui8_torque_sensor_filter;
-  uint8_t ui8_torque_sensor_adc_threshold;
-  uint8_t ui8_coast_brake_enable;
 } ui_vars_t;
 
 ui_vars_t* get_ui_vars(void);
 rt_vars_t* get_rt_vars(void);
 
-extern rt_vars_t rt_vars; // FIXME - this shouldn't be exposed outside of state.c - but currently mid merge
+extern rt_vars_t rt_vars;
 extern ui_vars_t ui_vars;
 
 extern volatile uint8_t ui8_g_motorVariablesStabilized;
-
-typedef struct {
-  uint8_t major;
-  uint8_t minor;
-  uint8_t patch;
-} tsdz2_firmware_version_t;
 
 void rt_processing(void);
 void rt_processing_stop(void);
@@ -349,13 +293,7 @@ void lcd_power_off(uint8_t updateDistanceOdo); // provided by LCD
 /// Set correct backlight brightness for current headlight state
 void set_lcd_backlight();
 
-void prepare_torque_sensor_calibration_table(void);
-
 extern uint8_t ui8_g_battery_soc;
-
-extern tsdz2_firmware_version_t g_tsdz2_firmware_version;
-
-extern volatile motor_init_status_t ui8_g_motor_init_status;
 
 // Live-parsed Bafang display-protocol state, populated by bafang_parse_reply()
 // in state.c. Exposed here so the Technical config screen can render its

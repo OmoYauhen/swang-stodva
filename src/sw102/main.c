@@ -77,11 +77,6 @@ void lcd_power_off(uint8_t updateDistanceOdo)
   // now disable the power to all the system
   system_power(0);
 
-  if (g_motor_init_state == MOTOR_INIT_SIMULATING) {
-    // we are running from a bench supply on a developer's desk, so just reboot because the power supply will never die
-    sd_nvic_SystemReset();
-  }
-
   // block here till we die
   while (1)
     ;
@@ -330,16 +325,3 @@ static void init_app_timers(void)
           gui_timer_timeout));
   APP_ERROR_CHECK(app_timer_start(gui_timer_id, GUI_INTERVAL, NULL));
 }
-
-void rt_graph_process()
-{
-}
-void ui_motor_stabilized()
-{
-}
-
-void set_conversions()
-{
-}
-
-uint8_t g_showNextScreenIndex, g_showNextScreenPreviousIndex;
