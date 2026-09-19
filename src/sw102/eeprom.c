@@ -24,125 +24,21 @@ const eeprom_data_t m_eeprom_data_defaults = {
   .ui16_wheel_perimeter = DEFAULT_VALUE_WHEEL_PERIMETER,
   .ui8_units_type = DEFAULT_VALUE_UNITS_TYPE,
   .ui8_time_field_enable = DEAFULT_VALUE_TIME_FIELD,
-  .ui8_target_max_battery_power_div25 = DEFAULT_VALUE_TARGET_MAX_BATTERY_POWER,
   .ui8_motor_power_option = DEFAULT_VALUE_MOTOR_POWER_OPTION,
   .ui8_ble_broadcast_enabled = DEFAULT_VALUE_BLE_BROADCAST_ENABLED,
-  .ui8_motor_current_min_adc = DEFAULT_VALUE_CURRENT_MIN_ADC,
-  .ui8_field_weakening = DEFAULT_FIELD_WEAKENING,
-  .ui8_motor_type = DEFAULT_VALUE_MOTOR_TYPE,
-  .ui8_motor_current_control_mode = DEFAULT_VALUE_MOTOR_CURRENT_CONTROL_MODE,
-  .ui8_motor_assistance_startup_without_pedal_rotation = DEFAULT_VALUE_MOTOR_ASSISTANCE_WITHOUT_PEDAL_ROTATION,
-  .ui16_assist_level_factor = {
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_1,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_2,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_3,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_4,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_5,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_6,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_7,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_8,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_9,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_10,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_11,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_12,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_13,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_14,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_15,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_16,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_17,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_18,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_19,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_20,
-  },
   .ui8_number_of_assist_levels = DEFAULT_VALUE_NUMBER_OF_ASSIST_LEVELS,
-  .ui8_startup_motor_power_boost_feature_enabled = DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FEATURE_ENABLED,
-  .ui8_startup_motor_power_boost_always = DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ALWAYS,
-  .ui16_startup_motor_power_boost_factor = {
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_1,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_2,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_3,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_4,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_5,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_6,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_7,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_8,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_9,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_10,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_11,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_12,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_13,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_14,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_15,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_16,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_17,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_18,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_19,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_20,
-  },
-  .ui8_startup_motor_power_boost_time =
-  DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_TIME,
-  .ui8_startup_motor_power_boost_fade_time =
-  DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FADE_TIME,
   .ui8_lcd_power_off_time_minutes =
   DEFAULT_VALUE_LCD_POWER_OFF_TIME,
   .ui8_lcd_backlight_on_brightness =
   DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS,
   .ui8_lcd_backlight_off_brightness =
   DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS,
-  .ui8_offroad_feature_enabled =
-  DEFAULT_VALUE_OFFROAD_FEATURE_ENABLED,
-  .ui8_offroad_enabled_on_startup =
-  DEFAULT_VALUE_OFFROAD_MODE_ENABLED_ON_STARTUP,
-  .ui8_offroad_speed_limit = DEFAULT_VALUE_OFFROAD_SPEED_LIMIT,
-  .ui8_offroad_power_limit_enabled =
-  DEFAULT_VALUE_OFFROAD_POWER_LIMIT_ENABLED,
-  .ui8_offroad_power_limit_div25 =
-  DEFAULT_VALUE_OFFROAD_POWER_LIMIT_DIV25,
   .ui32_odometer_x10 =
   DEFAULT_VALUE_ODOMETER_X10,
   .ui8_walk_assist_feature_enabled =
   DEFAULT_VALUE_WALK_ASSIST_FEATURE_ENABLED,
-  .ui8_walk_assist_level_factor = {
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_1,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_2,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_3,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_4,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_5,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_6,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_7,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_8,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_9,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_10,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_11,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_12,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_13,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_14,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_15,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_16,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_17,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_18,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_19,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_20,
-  },
-  .field_selectors = {
-    12, // human power
-    13, // motor power
-
-    0, // up time
-    2, // trip distance
-
-    13, // motor power
-    20, // PWM
-  },
-
-  .showNextScreenIndex = 0,
-  .x_axis_scale = DEFAULT_VALUE_X_AXIS_SCALE,
-  .ui8_buttons_up_down_invert = DEFAULT_VALUE_BUTTONS_UP_DOWN_INVERT,
 
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
-  .ui8_pedal_cadence_fast_stop = DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE,
-  .ui8_adc_lights_current_offset = DEFAULT_ADC_LIGHTS_CURRENT_OFFSET,
-  .ui8_throttle_virtual_step = DEFAULT_THROTTLE_VIRTUAL_STEP,
 
   .ui32_trip_a_distance_x1000 = DEFAULT_VALUE_TRIP_DISTANCE,
   .ui32_trip_a_time = DEFAULT_VALUE_TRIP_TIME,
@@ -196,68 +92,24 @@ void eeprom_init_variables(void) {
 	ui_vars->ui8_units_type = m_eeprom_data.ui8_units_type;
   ui_vars->ui8_time_field_enable =
       m_eeprom_data.ui8_time_field_enable;
-  ui_vars->ui8_target_max_battery_power_div25 =
-      m_eeprom_data.ui8_target_max_battery_power_div25;
   ui_vars->ui8_motor_power_option =
       m_eeprom_data.ui8_motor_power_option;
   ui_vars->ui8_ble_broadcast_enabled =
       m_eeprom_data.ui8_ble_broadcast_enabled;
-  ui_vars->ui8_motor_current_min_adc =
-      m_eeprom_data.ui8_motor_current_min_adc;
-  ui_vars->ui8_field_weakening =
-      m_eeprom_data.ui8_field_weakening;
-	ui_vars->ui8_motor_type = m_eeprom_data.ui8_motor_type;
-	ui_vars->ui8_motor_current_control_mode = m_eeprom_data.ui8_motor_current_control_mode;
-	ui_vars->ui8_motor_assistance_startup_without_pedal_rotation =
-			m_eeprom_data.ui8_motor_assistance_startup_without_pedal_rotation;
-	COPY_ARRAY(ui_vars, &m_eeprom_data, ui16_assist_level_factor);
 	ui_vars->ui8_number_of_assist_levels =
 			m_eeprom_data.ui8_number_of_assist_levels;
-	ui_vars->ui8_startup_motor_power_boost_feature_enabled =
-			m_eeprom_data.ui8_startup_motor_power_boost_feature_enabled;
-	ui_vars->ui8_startup_motor_power_boost_limit_power =
-			m_eeprom_data.ui8_startup_motor_power_boost_limit_power;
-	ui_vars->ui8_startup_motor_power_boost_always =
-			m_eeprom_data.ui8_startup_motor_power_boost_always;
-	COPY_ARRAY(ui_vars, &m_eeprom_data,
-			ui16_startup_motor_power_boost_factor);
-	ui_vars->ui8_startup_motor_power_boost_time =
-			m_eeprom_data.ui8_startup_motor_power_boost_time;
-	ui_vars->ui8_startup_motor_power_boost_fade_time =
-			m_eeprom_data.ui8_startup_motor_power_boost_fade_time;
 	ui_vars->ui8_lcd_power_off_time_minutes =
 			m_eeprom_data.ui8_lcd_power_off_time_minutes;
 	ui_vars->ui8_lcd_backlight_on_brightness =
 			m_eeprom_data.ui8_lcd_backlight_on_brightness;
 	ui_vars->ui8_lcd_backlight_off_brightness =
 			m_eeprom_data.ui8_lcd_backlight_off_brightness;
-	ui_vars->ui8_offroad_feature_enabled =
-			m_eeprom_data.ui8_offroad_feature_enabled;
-	ui_vars->ui8_offroad_enabled_on_startup =
-			m_eeprom_data.ui8_offroad_enabled_on_startup;
-	ui_vars->ui8_offroad_speed_limit =
-			m_eeprom_data.ui8_offroad_speed_limit;
-	ui_vars->ui8_offroad_power_limit_enabled =
-			m_eeprom_data.ui8_offroad_power_limit_enabled;
-	ui_vars->ui8_offroad_power_limit_div25 =
-			m_eeprom_data.ui8_offroad_power_limit_div25;
 	rt_vars->ui32_odometer_x10 = m_eeprom_data.ui32_odometer_x10; // odometer value should reside on RT vars
 	ui_vars->ui8_walk_assist_feature_enabled =
 			m_eeprom_data.ui8_walk_assist_feature_enabled;
-	COPY_ARRAY(ui_vars, &m_eeprom_data, ui8_walk_assist_level_factor);
-	COPY_ARRAY(ui_vars, &m_eeprom_data, field_selectors);
-	COPY_ARRAY(ui_vars, &m_eeprom_data, graphs_field_selectors);
-  ui_vars->ui8_buttons_up_down_invert = m_eeprom_data.ui8_buttons_up_down_invert;
 
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
-
-  ui_vars->ui8_pedal_cadence_fast_stop =
-      m_eeprom_data.ui8_pedal_cadence_fast_stop;
-  ui_vars->ui8_adc_lights_current_offset =
-      m_eeprom_data.ui8_adc_lights_current_offset;
-  ui_vars->ui8_throttle_virtual_step =
-      m_eeprom_data.ui8_throttle_virtual_step;
 
 
   // trip A values should reside on RT vars
@@ -284,68 +136,24 @@ void eeprom_write_variables(void) {
 	m_eeprom_data.ui8_units_type = ui_vars->ui8_units_type;
   m_eeprom_data.ui8_time_field_enable =
       ui_vars->ui8_time_field_enable;
-  m_eeprom_data.ui8_target_max_battery_power_div25 =
-      ui_vars->ui8_target_max_battery_power_div25;
   m_eeprom_data.ui8_motor_power_option =
       ui_vars->ui8_motor_power_option;
   m_eeprom_data.ui8_ble_broadcast_enabled =
       ui_vars->ui8_ble_broadcast_enabled;
-  m_eeprom_data.ui8_motor_current_min_adc =
-      ui_vars->ui8_motor_current_min_adc;
-  m_eeprom_data.ui8_field_weakening =
-      ui_vars->ui8_field_weakening;
-	m_eeprom_data.ui8_motor_type = ui_vars->ui8_motor_type;
-	m_eeprom_data.ui8_motor_current_control_mode = ui_vars->ui8_motor_current_control_mode;
-	m_eeprom_data.ui8_motor_assistance_startup_without_pedal_rotation =
-			ui_vars->ui8_motor_assistance_startup_without_pedal_rotation;
-	COPY_ARRAY(&m_eeprom_data, ui_vars, ui16_assist_level_factor);
 	m_eeprom_data.ui8_number_of_assist_levels =
 			ui_vars->ui8_number_of_assist_levels;
-	m_eeprom_data.ui8_startup_motor_power_boost_feature_enabled =
-			ui_vars->ui8_startup_motor_power_boost_feature_enabled;
-	m_eeprom_data.ui8_startup_motor_power_boost_always =
-			ui_vars->ui8_startup_motor_power_boost_always;
-	m_eeprom_data.ui8_startup_motor_power_boost_limit_power =
-			ui_vars->ui8_startup_motor_power_boost_limit_power;
-	COPY_ARRAY(&m_eeprom_data, ui_vars,
-			ui16_startup_motor_power_boost_factor);
-	m_eeprom_data.ui8_startup_motor_power_boost_time =
-			ui_vars->ui8_startup_motor_power_boost_time;
-	m_eeprom_data.ui8_startup_motor_power_boost_fade_time =
-			ui_vars->ui8_startup_motor_power_boost_fade_time;
 	m_eeprom_data.ui8_lcd_power_off_time_minutes =
 			ui_vars->ui8_lcd_power_off_time_minutes;
 	m_eeprom_data.ui8_lcd_backlight_on_brightness =
 			ui_vars->ui8_lcd_backlight_on_brightness;
 	m_eeprom_data.ui8_lcd_backlight_off_brightness =
 			ui_vars->ui8_lcd_backlight_off_brightness;
-	m_eeprom_data.ui8_offroad_feature_enabled =
-			ui_vars->ui8_offroad_feature_enabled;
-	m_eeprom_data.ui8_offroad_enabled_on_startup =
-			ui_vars->ui8_offroad_enabled_on_startup;
-	m_eeprom_data.ui8_offroad_speed_limit =
-			ui_vars->ui8_offroad_speed_limit;
-	m_eeprom_data.ui8_offroad_power_limit_enabled =
-			ui_vars->ui8_offroad_power_limit_enabled;
-	m_eeprom_data.ui8_offroad_power_limit_div25 =
-			ui_vars->ui8_offroad_power_limit_div25;
 	m_eeprom_data.ui32_odometer_x10 = ui_vars->ui32_odometer_x10;
 	m_eeprom_data.ui8_walk_assist_feature_enabled =
 			ui_vars->ui8_walk_assist_feature_enabled;
-	COPY_ARRAY(&m_eeprom_data, ui_vars, ui8_walk_assist_level_factor);
-	COPY_ARRAY(&m_eeprom_data, ui_vars, field_selectors);
-  COPY_ARRAY(&m_eeprom_data, ui_vars, graphs_field_selectors);
-  m_eeprom_data.ui8_buttons_up_down_invert = ui_vars->ui8_buttons_up_down_invert;
 
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;
-
-  m_eeprom_data.ui8_pedal_cadence_fast_stop =
-      ui_vars->ui8_pedal_cadence_fast_stop;
-  m_eeprom_data.ui8_adc_lights_current_offset =
-      ui_vars->ui8_adc_lights_current_offset;
-  m_eeprom_data.ui8_throttle_virtual_step =
-      ui_vars->ui8_throttle_virtual_step;
 
 
   m_eeprom_data.ui32_trip_a_distance_x1000 =

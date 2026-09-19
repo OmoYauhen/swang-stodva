@@ -30,8 +30,23 @@
 // 0x43: TSDZ2 purge — removed torque_sensor_calibration_*, torque_sensor_filter,
 // torque_sensor_adc_threshold, coast_brake_adc, coast_brake_enable fields
 // (Bafang has no display-side torque calibration or coast-brake ADC concept).
-#define EEPROM_MIN_COMPAT_VERSION 0x43
-#define EEPROM_VERSION 0x43
+// 0x44: TSDZ2 purge round 2 — removed remaining TSDZ2 controller settings that
+// the display never transmits to a Bafang motor (motor_current_min_adc,
+// field_weakening, target_max_battery_power_div25, motor_current_control_mode,
+// motor_type, motor_assistance_startup_without_pedal_rotation,
+// battery_soc_increment_decrement, buttons_up_down_invert), the startup-power-boost
+// feature (feature_enabled, always, limit_power, time, fade_time,
+// startup_motor_power_boost_factor[]), the TSDZ2 offroad/street-mode set
+// (offroad_feature_enabled/enabled_on_startup/speed_limit/power_limit_enabled/
+// power_limit_div25), 850C main-screen bookkeeping (field_selectors[],
+// graphs_field_selectors[], x_axis_scale, showNextScreenIndex),
+// miscellaneous TSDZ2 knobs (pedal_cadence_fast_stop, adc_lights_current_offset,
+// throttle_virtual_step). Also dropped the entire assist_level_factor[] and
+// walk_assist_level_factor[] arrays — Bafang delegates per-level power
+// interpretation to the motor's own controller EEPROM (programmed via bbs-fw /
+// Bafang Config Tool); the display only sends WRITE_PAS with a single level code.
+#define EEPROM_MIN_COMPAT_VERSION 0x44
+#define EEPROM_VERSION 0x44
 
 typedef struct eeprom_data {
 	uint8_t eeprom_version; // Used to detect changes in eeprom encoding, if != EEPROM_VERSION we will not use it
@@ -40,46 +55,15 @@ typedef struct eeprom_data {
 	uint16_t ui16_wheel_perimeter;
 	uint8_t ui8_units_type;
 	uint8_t ui8_time_field_enable;
-	uint8_t ui8_target_max_battery_power_div25;
-  uint8_t ui8_motor_current_min_adc;
-  uint8_t ui8_field_weakening;
-	uint8_t ui8_motor_type;
-	uint8_t ui8_motor_current_control_mode;
-	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
-	uint16_t ui16_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_number_of_assist_levels;
-	uint8_t ui8_startup_motor_power_boost_feature_enabled;
-	uint8_t ui8_startup_motor_power_boost_always;
-	uint8_t ui8_startup_motor_power_boost_limit_power;
-	uint16_t ui16_startup_motor_power_boost_factor[ASSIST_LEVEL_NUMBER];
-	uint8_t ui8_startup_motor_power_boost_time;
-	uint8_t ui8_startup_motor_power_boost_fade_time;
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
-	uint8_t ui8_offroad_feature_enabled;
-	uint8_t ui8_offroad_enabled_on_startup;
-	uint8_t ui8_offroad_speed_limit;
-	uint8_t ui8_offroad_power_limit_enabled;
-	uint8_t ui8_offroad_power_limit_div25;
 	uint32_t ui32_odometer_x10;
 	uint8_t ui8_walk_assist_feature_enabled;
-	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
-
-	uint8_t ui8_battery_soc_increment_decrement;
-	uint8_t ui8_buttons_up_down_invert;
-
-	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
-  uint8_t graphs_field_selectors[3]; // 3 screen main pages
-
-	uint8_t x_axis_scale; // x axis scale
-	uint8_t showNextScreenIndex;
 
   uint8_t ui8_street_mode_speed_limit;
 
-  uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_adc_lights_current_offset;
-  uint8_t ui8_throttle_virtual_step;
 
   uint32_t ui32_trip_a_distance_x1000;
   uint32_t ui32_trip_a_time;
@@ -106,104 +90,18 @@ typedef struct eeprom_data {
 #define DEAFULT_VALUE_TIME_FIELD                                    1 // 1 i show clock
 #define DEFAULT_VALUE_MOTOR_POWER_OPTION                            3  // 3 = 1000W (BBSHD stock)
 #define DEFAULT_VALUE_BLE_BROADCAST_ENABLED                         1  // on by default
-#define DEFAULT_VALUE_CURRENT_MIN_ADC                               1 // 1 unit, 0.156 A
-#define DEFAULT_VALUE_TARGET_MAX_BATTERY_POWER                      60 // e.g. 20 = 20 * 25 = 500, 0 is disabled
-#define DEFAULT_VALUE_MOTOR_CURRENT_CONTROL_MODE                    1 // 0 power; 1 torque
-#define DEFAULT_VALUE_MOTOR_TYPE                                    0 // 0 = 48V
-#define DEFAULT_VALUE_MOTOR_ASSISTANCE_WITHOUT_PEDAL_ROTATION       0 // 0 to keep this feature disable
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_1                         5 // 0.005 and each next increase +33%
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_2                         9
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_3                         12
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_4                         16
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_5                         21
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_6                         28
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_7                         37
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_8                         49
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_9                         65
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_10                        87
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_11                        115
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_12                        153
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_13                        204
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_14                        271
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_15                        360
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_16                        479
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_17                        637
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_18                        848
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_19                        1128
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_20                        1500
 #define DEFAULT_VALUE_WALK_ASSIST_FEATURE_ENABLED                   1
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_1                    35
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_2                    40
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_3                    45
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_4                    50
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_5                    55
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_6                    60
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_7                    70
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_8                    80
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_9                    90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_10                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_11                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_12                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_13                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_14                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_15                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_16                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_17                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_18                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_19                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_20                   90
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FEATURE_ENABLED     0
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ALWAYS              1
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_1      5
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_2      8
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_3      12
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_4      18
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_5      27
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_6      41
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_7      62
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_8      93
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_9      140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_10     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_11     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_12     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_13     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_14     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_15     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_16     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_17     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_18     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_19     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ASSIST_LEVEL_20     140
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_TIME                20 // 2.0 seconds
-#define DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FADE_TIME           35 // 3.5 seconds
 #define DEFAULT_VALUE_LCD_POWER_OFF_TIME                            60 // 60 minutes, each unit 1 minute
 #define DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS                   100 // 8 = 40%
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
-#define DEFAULT_VALUE_OFFROAD_FEATURE_ENABLED                       0
-#define DEFAULT_VALUE_OFFROAD_MODE_ENABLED_ON_STARTUP               0
-#define DEFAULT_VALUE_OFFROAD_SPEED_LIMIT                           25
-#define DEFAULT_VALUE_OFFROAD_POWER_LIMIT_ENABLED                   0
-#define DEFAULT_VALUE_OFFROAD_POWER_LIMIT_DIV25                     10 //10 * 25 = 250W
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
-#define DEFAULT_VALUE_BUTTONS_UP_DOWN_INVERT                        0 // regular state
-#define DEFAULT_VALUE_X_AXIS_SCALE                                  0 // 15m
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h
-#define DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE                      0 // disabled
-#define DEFAULT_FIELD_WEAKENING                                     1 // 1 enabled
-#define DEFAULT_ADC_LIGHTS_CURRENT_OFFSET                           1
-#define DEFAULT_THROTTLE_VIRTUAL_STEP                               5
 
 #define DEFAULT_VALUE_TRIP_DISTANCE                                  0
 #define DEFAULT_VALUE_TRIP_TIME                                      0
 #define DEFAULT_VALUE_TRIP_MAX_SPEED                                 0
 
 // *************************************************************************** //
-
-// Torque sensor value found experimentaly
-// measuring with a cheap digital hook scale, we found that each torque sensor unit is equal to 0.556 Nm
-// using the scale, was found that each 1kg was measured as 3 torque sensor units
-// Force (Nm) = Kg * 9.18 * 0.17 (arm cranks size)
-#define TORQUE_SENSOR_FORCE_SCALE_X1000 556
 
 // *************************************************************************** //
 // BATTERY

@@ -3,33 +3,20 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define ASSIST_LEVEL_NUMBER 20
-
 typedef struct rt_vars_struct {
 	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
 	uint8_t ui8_motor_current_x5;
-	uint8_t ui8_adc_throttle;
-	uint8_t ui8_throttle;
-	uint16_t ui16_adc_pedal_torque_sensor;
-	uint8_t ui8_pedal_weight_with_offset;
-	uint8_t ui8_pedal_weight;
-	uint16_t ui16_pedal_power_x10;
 	uint8_t ui8_duty_cycle;
 	uint8_t ui8_error_states;
 	uint16_t ui16_wheel_speed_x10;
 	uint8_t ui8_pedal_cadence;
-	uint16_t ui16_motor_speed_erps;
-	uint8_t ui8_foc_angle;
-	uint8_t ui8_motor_hall_sensors;
-	uint8_t ui8_pas_pedal_right;
 	uint8_t ui8_motor_temperature;
 	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
 	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power_filtered;
-	uint16_t ui16_pedal_power_filtered;
 	uint8_t ui8_pedal_cadence_filtered;
 	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
 
@@ -37,28 +24,9 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_number_of_assist_levels;
 	uint16_t ui16_wheel_perimeter;
 	uint8_t ui8_units_type;
-	uint8_t ui8_target_max_battery_power_div25;
-  uint8_t ui8_motor_current_min_adc;
-  uint8_t ui8_field_weakening;
-	uint8_t ui8_motor_type;
-	uint8_t ui8_motor_current_control_mode;
-	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
-	uint16_t ui16_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_walk_assist_feature_enabled;
-	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
-	uint8_t ui8_startup_motor_power_boost_feature_enabled;
-	uint8_t ui8_startup_motor_power_boost_always;
-	uint8_t ui8_startup_motor_power_boost_limit_power;
-	uint8_t ui8_startup_motor_power_boost_time;
-	uint8_t ui8_startup_motor_power_boost_fade_time;
-	uint16_t ui16_startup_motor_power_boost_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
-	uint8_t ui8_offroad_feature_enabled;
-	uint8_t ui8_offroad_enabled_on_startup;
-	uint8_t ui8_offroad_speed_limit;
-	uint8_t ui8_offroad_power_limit_enabled;
-	uint8_t ui8_offroad_power_limit_div25;
 	uint32_t ui32_odometer_x10;
 
 	uint32_t ui32_trip_a_distance_x1000;
@@ -74,41 +42,19 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
-	uint8_t ui8_offroad_mode;
 
   uint8_t ui8_street_mode_speed_limit;
 
-  uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_adc_lights_current_offset;
-  uint16_t ui16_adc_battery_current;
-  uint8_t ui8_throttle_virtual;
 } rt_vars_t;
-
-/* Selector positions for customizable fields
- * 0 is the graph,
- * 1-4  are the boxes above the graph, mainscreen1 on 850C
- * 5-8  are the boxes above the graph, mainscreen2 on 850C
- * 9-12 are the boxes above the graph, mainscreen2 on 850C
- */
-#define NUM_CUSTOMIZABLE_FIELDS 6
 
 typedef struct ui_vars_struct {
 	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
 	uint8_t ui8_motor_current_x5;
-	uint8_t ui8_adc_throttle;
-	uint8_t ui8_throttle;
-	uint16_t ui16_adc_pedal_torque_sensor;
-	uint8_t ui8_pedal_weight_with_offset;
-	uint8_t ui8_pedal_weight;
 	uint8_t ui8_duty_cycle;
 	uint8_t ui8_error_states;
 	uint16_t ui16_wheel_speed_x10;
 	uint8_t ui8_pedal_cadence;
-	uint16_t ui16_motor_speed_erps;
-	uint8_t ui8_foc_angle;
-	uint8_t ui8_motor_hall_sensors;
-	uint8_t ui8_pas_pedal_right;
 	uint8_t ui8_motor_temperature;
 	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
@@ -116,8 +62,6 @@ typedef struct ui_vars_struct {
 	uint16_t ui16_battery_current_filtered_x5;
 	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power;
-	uint16_t ui16_pedal_torque_filtered;
-	uint16_t ui16_pedal_power;
 	uint8_t ui8_pedal_cadence_filtered;
 
 	uint8_t ui8_assist_level;
@@ -125,31 +69,12 @@ typedef struct ui_vars_struct {
 	uint16_t ui16_wheel_perimeter;
 	uint8_t ui8_units_type;
 	uint8_t ui8_time_field_enable;
-	uint8_t ui8_target_max_battery_power_div25;
 	uint8_t ui8_motor_power_option; // index into motor_power_options_w[]: 0=250W 1=500W 2=750W 3=1000W
 	uint8_t ui8_ble_broadcast_enabled; // 0 = mute BLE telemetry notifications, 1 = broadcast
-	uint8_t ui8_motor_current_min_adc;
-	uint8_t ui8_field_weakening;
-	uint8_t ui8_motor_type;
-	uint8_t ui8_motor_current_control_mode;
-	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
-	uint16_t ui16_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_walk_assist_feature_enabled;
-	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
-	uint8_t ui8_startup_motor_power_boost_feature_enabled;
-	uint8_t ui8_startup_motor_power_boost_always;
-	uint8_t ui8_startup_motor_power_boost_limit_power;
-	uint8_t ui8_startup_motor_power_boost_time;
-	uint8_t ui8_startup_motor_power_boost_fade_time;
-	uint16_t ui16_startup_motor_power_boost_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
-	uint8_t ui8_offroad_feature_enabled;
-	uint8_t ui8_offroad_enabled_on_startup;
-	uint8_t ui8_offroad_speed_limit;
-	uint8_t ui8_offroad_power_limit_enabled;
-	uint8_t ui8_offroad_power_limit_div25;
 	uint32_t ui32_odometer_x10;
 
 	uint32_t ui32_trip_a_distance_x1000;
@@ -167,11 +92,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
-	uint8_t ui8_offroad_mode;
-	uint8_t ui8_buttons_up_down_invert;
-
-	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
-	uint8_t graphs_field_selectors[3]; // 3 screen main pages
 
 	uint8_t ui8_street_mode_speed_limit;
 
@@ -259,12 +179,6 @@ typedef struct ui_vars_struct {
   uint8_t var_motor_foc_auto_thresholds;
   uint8_t var_motor_foc_threshold_max;
   uint8_t var_motor_foc_threshold_min;
-
-  uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_adc_lights_current_offset;
-  uint16_t ui16_adc_battery_current;
-  uint8_t ui8_throttle_virtual;
-  uint8_t ui8_throttle_virtual_step;
 } ui_vars_t;
 
 ui_vars_t* get_ui_vars(void);

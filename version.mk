@@ -9,9 +9,9 @@
 # Kept ahead of the highest value already flashed to field devices (was 25 on
 # the old `main`, 27 for the first hand-built OTA) so OTA downgrades aren't
 # blocked by the bootloader's monotonic-version gate.
-VERSION_NUM := 29
+VERSION_NUM := 36
 
 # User-visible SemVer string. Managed by the release workflow.
-VERSION_STRING := 0.0.1-alpha.1
+VERSION_STRING := 0.0.2
 
 CFLAGS += -DVERSION_STRING=\"$(VERSION_STRING)\"
