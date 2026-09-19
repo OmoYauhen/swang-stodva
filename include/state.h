@@ -28,16 +28,6 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint32_t ui32_odometer_x10;
 
-	uint32_t ui32_trip_a_distance_x1000;
-	uint32_t ui32_trip_a_time;
-	uint16_t ui16_trip_a_avg_speed_x10;
-	uint16_t ui16_trip_a_max_speed_x10;
-
-	uint32_t ui32_trip_b_distance_x1000;
-	uint32_t ui32_trip_b_time;
-  	uint16_t ui16_trip_b_avg_speed_x10;
-  	uint16_t ui16_trip_b_max_speed_x10;
-
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
@@ -71,18 +61,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint32_t ui32_odometer_x10;
-
-	uint32_t ui32_trip_a_distance_x1000;
-	uint32_t ui32_trip_a_distance_x100;
-	uint32_t ui32_trip_a_time;
-	uint16_t ui16_trip_a_avg_speed_x10;
-	uint16_t ui16_trip_a_max_speed_x10;
-
-	uint32_t ui32_trip_b_distance_x1000;
-	uint32_t ui32_trip_b_distance_x100;
-	uint32_t ui32_trip_b_time;
-  	uint16_t ui16_trip_b_avg_speed_x10;
-  	uint16_t ui16_trip_b_max_speed_x10;
 
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;

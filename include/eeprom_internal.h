@@ -45,8 +45,12 @@
 // walk_assist_level_factor[] arrays — Bafang delegates per-level power
 // interpretation to the motor's own controller EEPROM (programmed via bbs-fw /
 // Bafang Config Tool); the display only sends WRITE_PAS with a single level code.
-#define EEPROM_MIN_COMPAT_VERSION 0x44
-#define EEPROM_VERSION 0x44
+// 0x45: dropped trip A / trip B entirely. Bafang cyclometers with trip integrators
+// live on the phone/GPS/companion; the display doesn't need to track them.
+// Removed ui32_trip_a/b_distance_x1000, ui32_trip_a/b_time,
+// ui16_trip_a/b_max_speed_x10 EEPROM fields plus the "Trip" reset menu.
+#define EEPROM_MIN_COMPAT_VERSION 0x45
+#define EEPROM_VERSION 0x45
 
 typedef struct eeprom_data {
 	uint8_t eeprom_version; // Used to detect changes in eeprom encoding, if != EEPROM_VERSION we will not use it
@@ -63,15 +67,6 @@ typedef struct eeprom_data {
 	uint8_t ui8_walk_assist_feature_enabled;
 
   uint8_t ui8_street_mode_speed_limit;
-
-
-  uint32_t ui32_trip_a_distance_x1000;
-  uint32_t ui32_trip_a_time;
-  uint16_t ui16_trip_a_max_speed_x10;
-
-  uint32_t ui32_trip_b_distance_x1000;
-  uint32_t ui32_trip_b_time;
-  uint16_t ui16_trip_b_max_speed_x10;
 
   uint8_t ui8_motor_power_option; // 0=250W 1=500W 2=750W 3=1000W
 
@@ -96,10 +91,6 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h
-
-#define DEFAULT_VALUE_TRIP_DISTANCE                                  0
-#define DEFAULT_VALUE_TRIP_TIME                                      0
-#define DEFAULT_VALUE_TRIP_MAX_SPEED                                 0
 
 // *************************************************************************** //
 

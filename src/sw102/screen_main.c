@@ -72,17 +72,11 @@ static void graph_paint(struct GraphData *gd, int x_left, int y_bot, int w, int 
 
 enum display_mode_t {
 	ModeOdometer,
-	ModeTripDistance,
-	ModeTripTime,
-	ModeTripAVS,
 	ModeMotorPower,
 	ModeLast,
 } display_mode;
 
 static struct GraphData * const mode_graph[] = {
-	NULL,
-	NULL,
-	NULL,
 	NULL,
 	&graph_motor_power,
 };
@@ -103,33 +97,6 @@ static void draw_2nd_field(ui_vars_t *ui, int y)
 	switch(display_mode) {
 	case ModeOdometer:
 		sprintf(buf, "%d km", ui_vars.ui32_odometer_x10/10);
-		break;
-
-	case ModeTripDistance:
-		m = ui->ui32_trip_a_distance_x1000;
-		if(m < 1000) // <0m-999m
-			sprintf(buf, "%d m", m);
-		else if(m < 10000) // <1.000km-9.999km
-			sprintf(buf, "%d.%03d km", m/1000, m % 1000);
-		else if(m < 100000) // 10.00km-99.99km
-			sprintf(buf, "%d.%02d km", m/1000, (m/10) % 100);
-		else if(m < 100000) // 100.0km-999.9km
-			sprintf(buf, "%d.%01d km", m/1000, (m/100) % 10);
-		else // 1000km+
-			sprintf(buf, "%d km", m/1000);
-		break;
-
-	case ModeTripTime:
-		m = ui->ui32_trip_a_time/60;
-		if(m < 60 * 99)
-			sprintf(buf, "%dh %dm", m/60, m % 60);
-		else
-			sprintf(buf, "%d h", m/3600);
-		break;
-
-	case ModeTripAVS:
-		m = ui->ui16_trip_a_avg_speed_x10;
-		sprintf(buf, "%d.%01d km/h", m/10, m%10);
 		break;
 
 	case ModeMotorPower:
