@@ -604,19 +604,6 @@ void copy_rt_to_ui_vars(void) {
 	rt_vars.ui8_walk_assist = ui_vars.ui8_walk_assist;
 	rt_vars.ui8_offroad_mode = ui_vars.ui8_offroad_mode;
 	rt_vars.ui16_wheel_perimeter = ui_vars.ui16_wheel_perimeter;
-	rt_vars.ui8_startup_motor_power_boost_always =
-			ui_vars.ui8_startup_motor_power_boost_always;
-	rt_vars.ui8_startup_motor_power_boost_limit_power =
-			ui_vars.ui8_startup_motor_power_boost_limit_power;
-	rt_vars.ui8_startup_motor_power_boost_time =
-			ui_vars.ui8_startup_motor_power_boost_time;
-  for (uint8_t i = 0; i < 9; i++) {
-    rt_vars.ui16_startup_motor_power_boost_factor[i] = ui_vars.ui16_startup_motor_power_boost_factor[i];
-  }
-	rt_vars.ui8_startup_motor_power_boost_fade_time =
-			ui_vars.ui8_startup_motor_power_boost_fade_time;
-	rt_vars.ui8_startup_motor_power_boost_feature_enabled =
-			ui_vars.ui8_startup_motor_power_boost_feature_enabled;
 	rt_vars.ui8_offroad_feature_enabled = ui_vars.ui8_offroad_feature_enabled;
 	rt_vars.ui8_offroad_enabled_on_startup =
 			ui_vars.ui8_offroad_enabled_on_startup;

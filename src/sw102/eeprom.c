@@ -49,34 +49,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
   DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_20,
   },
   .ui8_number_of_assist_levels = DEFAULT_VALUE_NUMBER_OF_ASSIST_LEVELS,
-  .ui8_startup_motor_power_boost_feature_enabled = DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FEATURE_ENABLED,
-  .ui8_startup_motor_power_boost_always = DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_ALWAYS,
-  .ui16_startup_motor_power_boost_factor = {
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_1,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_2,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_3,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_4,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_5,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_6,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_7,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_8,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_9,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_10,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_11,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_12,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_13,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_14,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_15,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_16,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_17,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_18,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_19,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_20,
-  },
-  .ui8_startup_motor_power_boost_time =
-  DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_TIME,
-  .ui8_startup_motor_power_boost_fade_time =
-  DEFAULT_VALUE_STARTUP_MOTOR_POWER_BOOST_FADE_TIME,
   .ui8_lcd_power_off_time_minutes =
   DEFAULT_VALUE_LCD_POWER_OFF_TIME,
   .ui8_lcd_backlight_on_brightness =
@@ -196,18 +168,6 @@ void eeprom_init_variables(void) {
 	COPY_ARRAY(ui_vars, &m_eeprom_data, ui16_assist_level_factor);
 	ui_vars->ui8_number_of_assist_levels =
 			m_eeprom_data.ui8_number_of_assist_levels;
-	ui_vars->ui8_startup_motor_power_boost_feature_enabled =
-			m_eeprom_data.ui8_startup_motor_power_boost_feature_enabled;
-	ui_vars->ui8_startup_motor_power_boost_limit_power =
-			m_eeprom_data.ui8_startup_motor_power_boost_limit_power;
-	ui_vars->ui8_startup_motor_power_boost_always =
-			m_eeprom_data.ui8_startup_motor_power_boost_always;
-	COPY_ARRAY(ui_vars, &m_eeprom_data,
-			ui16_startup_motor_power_boost_factor);
-	ui_vars->ui8_startup_motor_power_boost_time =
-			m_eeprom_data.ui8_startup_motor_power_boost_time;
-	ui_vars->ui8_startup_motor_power_boost_fade_time =
-			m_eeprom_data.ui8_startup_motor_power_boost_fade_time;
 	ui_vars->ui8_lcd_power_off_time_minutes =
 			m_eeprom_data.ui8_lcd_power_off_time_minutes;
 	ui_vars->ui8_lcd_backlight_on_brightness =
@@ -273,18 +233,6 @@ void eeprom_write_variables(void) {
 	COPY_ARRAY(&m_eeprom_data, ui_vars, ui16_assist_level_factor);
 	m_eeprom_data.ui8_number_of_assist_levels =
 			ui_vars->ui8_number_of_assist_levels;
-	m_eeprom_data.ui8_startup_motor_power_boost_feature_enabled =
-			ui_vars->ui8_startup_motor_power_boost_feature_enabled;
-	m_eeprom_data.ui8_startup_motor_power_boost_always =
-			ui_vars->ui8_startup_motor_power_boost_always;
-	m_eeprom_data.ui8_startup_motor_power_boost_limit_power =
-			ui_vars->ui8_startup_motor_power_boost_limit_power;
-	COPY_ARRAY(&m_eeprom_data, ui_vars,
-			ui16_startup_motor_power_boost_factor);
-	m_eeprom_data.ui8_startup_motor_power_boost_time =
-			ui_vars->ui8_startup_motor_power_boost_time;
-	m_eeprom_data.ui8_startup_motor_power_boost_fade_time =
-			ui_vars->ui8_startup_motor_power_boost_fade_time;
 	m_eeprom_data.ui8_lcd_power_off_time_minutes =
 			ui_vars->ui8_lcd_power_off_time_minutes;
 	m_eeprom_data.ui8_lcd_backlight_on_brightness =
