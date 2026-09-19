@@ -36,17 +36,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
   DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_7,
   DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_8,
   DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_9,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_10,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_11,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_12,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_13,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_14,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_15,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_16,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_17,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_18,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_19,
-  DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_20,
   },
   .ui8_number_of_assist_levels = DEFAULT_VALUE_NUMBER_OF_ASSIST_LEVELS,
   .ui8_lcd_power_off_time_minutes =
@@ -69,31 +58,7 @@ const eeprom_data_t m_eeprom_data_defaults = {
   DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_7,
   DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_8,
   DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_9,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_10,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_11,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_12,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_13,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_14,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_15,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_16,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_17,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_18,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_19,
-  DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_20,
   },
-  .field_selectors = {
-    12, // human power
-    13, // motor power
-
-    0, // up time
-    2, // trip distance
-
-    13, // motor power
-    20, // PWM
-  },
-
-  .showNextScreenIndex = 0,
-  .x_axis_scale = DEFAULT_VALUE_X_AXIS_SCALE,
 
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
   .ui8_pedal_cadence_fast_stop = DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE,
@@ -169,8 +134,6 @@ void eeprom_init_variables(void) {
 	ui_vars->ui8_walk_assist_feature_enabled =
 			m_eeprom_data.ui8_walk_assist_feature_enabled;
 	COPY_ARRAY(ui_vars, &m_eeprom_data, ui8_walk_assist_level_factor);
-	COPY_ARRAY(ui_vars, &m_eeprom_data, field_selectors);
-	COPY_ARRAY(ui_vars, &m_eeprom_data, graphs_field_selectors);
 
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
@@ -224,8 +187,6 @@ void eeprom_write_variables(void) {
 	m_eeprom_data.ui8_walk_assist_feature_enabled =
 			ui_vars->ui8_walk_assist_feature_enabled;
 	COPY_ARRAY(&m_eeprom_data, ui_vars, ui8_walk_assist_level_factor);
-	COPY_ARRAY(&m_eeprom_data, ui_vars, field_selectors);
-  COPY_ARRAY(&m_eeprom_data, ui_vars, graphs_field_selectors);
 
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;

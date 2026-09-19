@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define ASSIST_LEVEL_NUMBER 20
+#define ASSIST_LEVEL_NUMBER 9
 
 typedef struct rt_vars_struct {
 	uint16_t ui16_adc_battery_voltage;
@@ -55,14 +55,6 @@ typedef struct rt_vars_struct {
   uint8_t ui8_throttle_virtual;
 } rt_vars_t;
 
-/* Selector positions for customizable fields
- * 0 is the graph,
- * 1-4  are the boxes above the graph, mainscreen1 on 850C
- * 5-8  are the boxes above the graph, mainscreen2 on 850C
- * 9-12 are the boxes above the graph, mainscreen2 on 850C
- */
-#define NUM_CUSTOMIZABLE_FIELDS 6
-
 typedef struct ui_vars_struct {
 	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
@@ -110,10 +102,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
-	uint8_t ui8_offroad_mode;
-
-	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
-	uint8_t graphs_field_selectors[3]; // 3 screen main pages
 
 	uint8_t ui8_street_mode_speed_limit;
 

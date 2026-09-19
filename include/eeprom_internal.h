@@ -62,12 +62,6 @@ typedef struct eeprom_data {
 	uint8_t ui8_walk_assist_feature_enabled;
 	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
 
-	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
-  uint8_t graphs_field_selectors[3]; // 3 screen main pages
-
-	uint8_t x_axis_scale; // x axis scale
-	uint8_t showNextScreenIndex;
-
   uint8_t ui8_street_mode_speed_limit;
 
   uint8_t ui8_pedal_cadence_fast_stop;
@@ -108,17 +102,6 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_7                         37
 #define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_8                         49
 #define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_9                         65
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_10                        87
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_11                        115
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_12                        153
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_13                        204
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_14                        271
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_15                        360
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_16                        479
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_17                        637
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_18                        848
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_19                        1128
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_20                        1500
 #define DEFAULT_VALUE_WALK_ASSIST_FEATURE_ENABLED                   1
 #define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_1                    35
 #define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_2                    40
@@ -129,22 +112,10 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_7                    70
 #define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_8                    80
 #define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_9                    90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_10                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_11                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_12                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_13                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_14                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_15                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_16                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_17                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_18                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_19                   90
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_20                   90
 #define DEFAULT_VALUE_LCD_POWER_OFF_TIME                            60 // 60 minutes, each unit 1 minute
 #define DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS                   100 // 8 = 40%
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
-#define DEFAULT_VALUE_X_AXIS_SCALE                                  0 // 15m
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h
 #define DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE                      0 // disabled
 #define DEFAULT_ADC_LIGHTS_CURRENT_OFFSET                           1
