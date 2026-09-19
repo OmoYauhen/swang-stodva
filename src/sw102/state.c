@@ -366,7 +366,6 @@ static uint16_t fakeRandom(uint32_t *storage, uint16_t minv, uint16_t maxv) {
 void rt_low_pass_filter_battery_voltage_current_power(void) {
 	static uint32_t ui32_battery_voltage_accumulated_x10000 = 0;
 	static uint16_t ui16_battery_current_accumulated_x5 = 0;
-  static uint16_t ui16_motor_current_accumulated_x5 = 0;
 
 	// low pass filter battery voltage
 	ui32_battery_voltage_accumulated_x10000 -=
@@ -386,15 +385,6 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
 	rt_vars.ui16_battery_current_filtered_x5 =
 			ui16_battery_current_accumulated_x5
 					>> BATTERY_CURRENT_FILTER_COEFFICIENT;
-
-  // low pass filter motor current
-  ui16_motor_current_accumulated_x5 -= ui16_motor_current_accumulated_x5
-      >> MOTOR_CURRENT_FILTER_COEFFICIENT;
-  ui16_motor_current_accumulated_x5 +=
-      (uint16_t) rt_vars.ui8_motor_current_x5;
-  rt_vars.ui16_motor_current_filtered_x5 =
-      ui16_motor_current_accumulated_x5
-          >> MOTOR_CURRENT_FILTER_COEFFICIENT;
 
   // base battery power = I × V (no resistance-based loss term; the pack-resistance
   // config and its P = R·I² adder were removed as dead code).
@@ -553,23 +543,17 @@ void rt_processing_start(void) {
  *
  */
 void copy_rt_to_ui_vars(void) {
-	ui_vars.ui16_adc_battery_voltage = rt_vars.ui16_adc_battery_voltage;
 	ui_vars.ui8_battery_current_x5 = rt_vars.ui8_battery_current_x5;
-	ui_vars.ui8_motor_current_x5 = rt_vars.ui8_motor_current_x5;
 	ui_vars.ui8_duty_cycle = rt_vars.ui8_duty_cycle;
 	ui_vars.ui8_error_states = rt_vars.ui8_error_states;
 	ui_vars.ui16_wheel_speed_x10 = rt_vars.ui16_wheel_speed_x10;
 	ui_vars.ui8_pedal_cadence = rt_vars.ui8_pedal_cadence;
 	ui_vars.ui8_pedal_cadence_filtered = rt_vars.ui8_pedal_cadence_filtered;
 	ui_vars.ui8_motor_temperature = rt_vars.ui8_motor_temperature;
-	ui_vars.ui32_wheel_speed_sensor_tick_counter =
-			rt_vars.ui32_wheel_speed_sensor_tick_counter;
 	ui_vars.ui16_battery_voltage_filtered_x10 =
 			rt_vars.ui16_battery_voltage_filtered_x10;
 	ui_vars.ui16_battery_current_filtered_x5 =
 			rt_vars.ui16_battery_current_filtered_x5;
-  ui_vars.ui16_motor_current_filtered_x5 =
-      rt_vars.ui16_motor_current_filtered_x5;
 	ui_vars.ui16_battery_power = rt_vars.ui16_battery_power_filtered;
 	ui_vars.ui8_braking = rt_vars.ui8_braking;
 

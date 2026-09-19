@@ -15,7 +15,6 @@ typedef struct rt_vars_struct {
 	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
-	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power_filtered;
 	uint8_t ui8_pedal_cadence_filtered;
 	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
@@ -48,19 +47,15 @@ typedef struct rt_vars_struct {
 } rt_vars_t;
 
 typedef struct ui_vars_struct {
-	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
-	uint8_t ui8_motor_current_x5;
 	uint8_t ui8_duty_cycle;
 	uint8_t ui8_error_states;
 	uint16_t ui16_wheel_speed_x10;
 	uint8_t ui8_pedal_cadence;
 	uint8_t ui8_motor_temperature;
-	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
-	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power;
 	uint8_t ui8_pedal_cadence_filtered;
 
@@ -159,6 +154,5 @@ extern struct bafang_state_t g_bafang;
 // 0 equal to no filtering and no delay, higher values will increase filtering but will also add bigger delay
 #define BATTERY_VOLTAGE_FILTER_COEFFICIENT 3
 #define BATTERY_CURRENT_FILTER_COEFFICIENT 2
-#define MOTOR_CURRENT_FILTER_COEFFICIENT   2
 #define PEDAL_POWER_FILTER_COEFFICIENT     3
 #define PEDAL_CADENCE_FILTER_COEFFICIENT   3
