@@ -64,9 +64,6 @@ typedef struct eeprom_data {
 
   uint8_t ui8_street_mode_speed_limit;
 
-  uint8_t ui8_pedal_cadence_fast_stop;
-  uint8_t ui8_adc_lights_current_offset;
-  uint8_t ui8_throttle_virtual_step;
 
   uint32_t ui32_trip_a_distance_x1000;
   uint32_t ui32_trip_a_time;
@@ -117,9 +114,6 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h
-#define DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE                      0 // disabled
-#define DEFAULT_ADC_LIGHTS_CURRENT_OFFSET                           1
-#define DEFAULT_THROTTLE_VIRTUAL_STEP                               5
 
 #define DEFAULT_VALUE_TRIP_DISTANCE                                  0
 #define DEFAULT_VALUE_TRIP_TIME                                      0

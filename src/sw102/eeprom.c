@@ -61,9 +61,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
   },
 
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
-  .ui8_pedal_cadence_fast_stop = DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE,
-  .ui8_adc_lights_current_offset = DEFAULT_ADC_LIGHTS_CURRENT_OFFSET,
-  .ui8_throttle_virtual_step = DEFAULT_THROTTLE_VIRTUAL_STEP,
 
   .ui32_trip_a_distance_x1000 = DEFAULT_VALUE_TRIP_DISTANCE,
   .ui32_trip_a_time = DEFAULT_VALUE_TRIP_TIME,
@@ -138,13 +135,6 @@ void eeprom_init_variables(void) {
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
 
-  ui_vars->ui8_pedal_cadence_fast_stop =
-      m_eeprom_data.ui8_pedal_cadence_fast_stop;
-  ui_vars->ui8_adc_lights_current_offset =
-      m_eeprom_data.ui8_adc_lights_current_offset;
-  ui_vars->ui8_throttle_virtual_step =
-      m_eeprom_data.ui8_throttle_virtual_step;
-
 
   // trip A values should reside on RT vars
   rt_vars->ui32_trip_a_distance_x1000 =
@@ -190,13 +180,6 @@ void eeprom_write_variables(void) {
 
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;
-
-  m_eeprom_data.ui8_pedal_cadence_fast_stop =
-      ui_vars->ui8_pedal_cadence_fast_stop;
-  m_eeprom_data.ui8_adc_lights_current_offset =
-      ui_vars->ui8_adc_lights_current_offset;
-  m_eeprom_data.ui8_throttle_virtual_step =
-      ui_vars->ui8_throttle_virtual_step;
 
 
   m_eeprom_data.ui32_trip_a_distance_x1000 =

@@ -586,7 +586,6 @@ void copy_rt_to_ui_vars(void) {
   ui_vars.ui16_trip_b_max_speed_x10 = rt_vars.ui16_trip_b_max_speed_x10;
 
 	ui_vars.ui32_odometer_x10 = rt_vars.ui32_odometer_x10;
-  ui_vars.ui16_adc_battery_current = rt_vars.ui16_adc_battery_current;
 
 	rt_vars.ui8_assist_level = ui_vars.ui8_assist_level;
 	for (uint8_t i = 0; i < ASSIST_LEVEL_NUMBER; i++) {
@@ -599,10 +598,6 @@ void copy_rt_to_ui_vars(void) {
 	rt_vars.ui8_walk_assist = ui_vars.ui8_walk_assist;
 	rt_vars.ui16_wheel_perimeter = ui_vars.ui16_wheel_perimeter;
   rt_vars.ui8_street_mode_speed_limit = ui_vars.ui8_street_mode_speed_limit;
-
-  rt_vars.ui8_pedal_cadence_fast_stop = ui_vars.ui8_pedal_cadence_fast_stop;
-  rt_vars.ui8_adc_lights_current_offset = ui_vars.ui8_adc_lights_current_offset;
-  rt_vars.ui8_throttle_virtual = ui_vars.ui8_throttle_virtual;
 }
 
 /// must be called from main() idle loop
