@@ -588,12 +588,6 @@ void copy_rt_to_ui_vars(void) {
 	ui_vars.ui32_odometer_x10 = rt_vars.ui32_odometer_x10;
 
 	rt_vars.ui8_assist_level = ui_vars.ui8_assist_level;
-	for (uint8_t i = 0; i < ASSIST_LEVEL_NUMBER; i++) {
-	  rt_vars.ui16_assist_level_factor[i] = ui_vars.ui16_assist_level_factor[i];
-	}
-  for (uint8_t i = 0; i < ASSIST_LEVEL_NUMBER; i++) {
-    rt_vars.ui8_walk_assist_level_factor[i] = ui_vars.ui8_walk_assist_level_factor[i];
-  }
 	rt_vars.ui8_lights = ui_vars.ui8_lights;
 	rt_vars.ui8_walk_assist = ui_vars.ui8_walk_assist;
 	rt_vars.ui16_wheel_perimeter = ui_vars.ui16_wheel_perimeter;

@@ -41,8 +41,10 @@
 // power_limit_div25), 850C main-screen bookkeeping (field_selectors[],
 // graphs_field_selectors[], x_axis_scale, showNextScreenIndex),
 // miscellaneous TSDZ2 knobs (pedal_cadence_fast_stop, adc_lights_current_offset,
-// throttle_virtual_step). Also shrank assist_level_factor[] /
-// walk_assist_level_factor[] arrays from 20 to 9 slots (Bafang PAS caps at 9).
+// throttle_virtual_step). Also dropped the entire assist_level_factor[] and
+// walk_assist_level_factor[] arrays — Bafang delegates per-level power
+// interpretation to the motor's own controller EEPROM (programmed via bbs-fw /
+// Bafang Config Tool); the display only sends WRITE_PAS with a single level code.
 #define EEPROM_MIN_COMPAT_VERSION 0x44
 #define EEPROM_VERSION 0x44
 
@@ -53,14 +55,12 @@ typedef struct eeprom_data {
 	uint16_t ui16_wheel_perimeter;
 	uint8_t ui8_units_type;
 	uint8_t ui8_time_field_enable;
-	uint16_t ui16_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_number_of_assist_levels;
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint32_t ui32_odometer_x10;
 	uint8_t ui8_walk_assist_feature_enabled;
-	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
 
   uint8_t ui8_street_mode_speed_limit;
 
@@ -90,25 +90,7 @@ typedef struct eeprom_data {
 #define DEAFULT_VALUE_TIME_FIELD                                    1 // 1 i show clock
 #define DEFAULT_VALUE_MOTOR_POWER_OPTION                            3  // 3 = 1000W (BBSHD stock)
 #define DEFAULT_VALUE_BLE_BROADCAST_ENABLED                         1  // on by default
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_1                         5 // 0.005 and each next increase +33%
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_2                         9
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_3                         12
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_4                         16
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_5                         21
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_6                         28
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_7                         37
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_8                         49
-#define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_9                         65
 #define DEFAULT_VALUE_WALK_ASSIST_FEATURE_ENABLED                   1
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_1                    35
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_2                    40
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_3                    45
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_4                    50
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_5                    55
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_6                    60
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_7                    70
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_8                    80
-#define DEFAULT_VALUE_WALK_ASSIST_LEVEL_FACTOR_9                    90
 #define DEFAULT_VALUE_LCD_POWER_OFF_TIME                            60 // 60 minutes, each unit 1 minute
 #define DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS                   100 // 8 = 40%
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
