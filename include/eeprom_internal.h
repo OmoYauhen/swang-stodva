@@ -58,11 +58,6 @@ typedef struct eeprom_data {
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
-	uint8_t ui8_offroad_feature_enabled;
-	uint8_t ui8_offroad_enabled_on_startup;
-	uint8_t ui8_offroad_speed_limit;
-	uint8_t ui8_offroad_power_limit_enabled;
-	uint8_t ui8_offroad_power_limit_div25;
 	uint32_t ui32_odometer_x10;
 	uint8_t ui8_walk_assist_feature_enabled;
 	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
@@ -148,11 +143,6 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_LCD_POWER_OFF_TIME                            60 // 60 minutes, each unit 1 minute
 #define DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS                   100 // 8 = 40%
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
-#define DEFAULT_VALUE_OFFROAD_FEATURE_ENABLED                       0
-#define DEFAULT_VALUE_OFFROAD_MODE_ENABLED_ON_STARTUP               0
-#define DEFAULT_VALUE_OFFROAD_SPEED_LIMIT                           25
-#define DEFAULT_VALUE_OFFROAD_POWER_LIMIT_ENABLED                   0
-#define DEFAULT_VALUE_OFFROAD_POWER_LIMIT_DIV25                     10 //10 * 25 = 250W
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
 #define DEFAULT_VALUE_X_AXIS_SCALE                                  0 // 15m
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h

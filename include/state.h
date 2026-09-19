@@ -31,11 +31,6 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
-	uint8_t ui8_offroad_feature_enabled;
-	uint8_t ui8_offroad_enabled_on_startup;
-	uint8_t ui8_offroad_speed_limit;
-	uint8_t ui8_offroad_power_limit_enabled;
-	uint8_t ui8_offroad_power_limit_div25;
 	uint32_t ui32_odometer_x10;
 
 	uint32_t ui32_trip_a_distance_x1000;
@@ -51,7 +46,6 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
-	uint8_t ui8_offroad_mode;
 
   uint8_t ui8_street_mode_speed_limit;
 
@@ -99,11 +93,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
-	uint8_t ui8_offroad_feature_enabled;
-	uint8_t ui8_offroad_enabled_on_startup;
-	uint8_t ui8_offroad_speed_limit;
-	uint8_t ui8_offroad_power_limit_enabled;
-	uint8_t ui8_offroad_power_limit_div25;
 	uint32_t ui32_odometer_x10;
 
 	uint32_t ui32_trip_a_distance_x1000;

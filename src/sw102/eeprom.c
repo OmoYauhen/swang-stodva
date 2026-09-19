@@ -55,15 +55,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
   DEFAULT_VALUE_LCD_BACKLIGHT_ON_BRIGHTNESS,
   .ui8_lcd_backlight_off_brightness =
   DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS,
-  .ui8_offroad_feature_enabled =
-  DEFAULT_VALUE_OFFROAD_FEATURE_ENABLED,
-  .ui8_offroad_enabled_on_startup =
-  DEFAULT_VALUE_OFFROAD_MODE_ENABLED_ON_STARTUP,
-  .ui8_offroad_speed_limit = DEFAULT_VALUE_OFFROAD_SPEED_LIMIT,
-  .ui8_offroad_power_limit_enabled =
-  DEFAULT_VALUE_OFFROAD_POWER_LIMIT_ENABLED,
-  .ui8_offroad_power_limit_div25 =
-  DEFAULT_VALUE_OFFROAD_POWER_LIMIT_DIV25,
   .ui32_odometer_x10 =
   DEFAULT_VALUE_ODOMETER_X10,
   .ui8_walk_assist_feature_enabled =
@@ -174,16 +165,6 @@ void eeprom_init_variables(void) {
 			m_eeprom_data.ui8_lcd_backlight_on_brightness;
 	ui_vars->ui8_lcd_backlight_off_brightness =
 			m_eeprom_data.ui8_lcd_backlight_off_brightness;
-	ui_vars->ui8_offroad_feature_enabled =
-			m_eeprom_data.ui8_offroad_feature_enabled;
-	ui_vars->ui8_offroad_enabled_on_startup =
-			m_eeprom_data.ui8_offroad_enabled_on_startup;
-	ui_vars->ui8_offroad_speed_limit =
-			m_eeprom_data.ui8_offroad_speed_limit;
-	ui_vars->ui8_offroad_power_limit_enabled =
-			m_eeprom_data.ui8_offroad_power_limit_enabled;
-	ui_vars->ui8_offroad_power_limit_div25 =
-			m_eeprom_data.ui8_offroad_power_limit_div25;
 	rt_vars->ui32_odometer_x10 = m_eeprom_data.ui32_odometer_x10; // odometer value should reside on RT vars
 	ui_vars->ui8_walk_assist_feature_enabled =
 			m_eeprom_data.ui8_walk_assist_feature_enabled;
@@ -239,16 +220,6 @@ void eeprom_write_variables(void) {
 			ui_vars->ui8_lcd_backlight_on_brightness;
 	m_eeprom_data.ui8_lcd_backlight_off_brightness =
 			ui_vars->ui8_lcd_backlight_off_brightness;
-	m_eeprom_data.ui8_offroad_feature_enabled =
-			ui_vars->ui8_offroad_feature_enabled;
-	m_eeprom_data.ui8_offroad_enabled_on_startup =
-			ui_vars->ui8_offroad_enabled_on_startup;
-	m_eeprom_data.ui8_offroad_speed_limit =
-			ui_vars->ui8_offroad_speed_limit;
-	m_eeprom_data.ui8_offroad_power_limit_enabled =
-			ui_vars->ui8_offroad_power_limit_enabled;
-	m_eeprom_data.ui8_offroad_power_limit_div25 =
-			ui_vars->ui8_offroad_power_limit_div25;
 	m_eeprom_data.ui32_odometer_x10 = ui_vars->ui32_odometer_x10;
 	m_eeprom_data.ui8_walk_assist_feature_enabled =
 			ui_vars->ui8_walk_assist_feature_enabled;

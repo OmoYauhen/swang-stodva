@@ -531,11 +531,6 @@ uint8_t rt_first_time_management(void) {
 
     ui8_motor_controller_init = 0;
 
-    if (ui_vars.ui8_offroad_feature_enabled
-        && ui_vars.ui8_offroad_enabled_on_startup) {
-      ui_vars.ui8_offroad_mode = 1;
-    }
-
     // Push the configured speed limit down to the motor once the UART link has
     // stabilized. Protocol wants kmh × 10 (big-endian). Stock Bafang firmware
     // honors this; bbs-fw acks and discards it.
@@ -602,16 +597,7 @@ void copy_rt_to_ui_vars(void) {
   }
 	rt_vars.ui8_lights = ui_vars.ui8_lights;
 	rt_vars.ui8_walk_assist = ui_vars.ui8_walk_assist;
-	rt_vars.ui8_offroad_mode = ui_vars.ui8_offroad_mode;
 	rt_vars.ui16_wheel_perimeter = ui_vars.ui16_wheel_perimeter;
-	rt_vars.ui8_offroad_feature_enabled = ui_vars.ui8_offroad_feature_enabled;
-	rt_vars.ui8_offroad_enabled_on_startup =
-			ui_vars.ui8_offroad_enabled_on_startup;
-	rt_vars.ui8_offroad_speed_limit = ui_vars.ui8_offroad_speed_limit;
-	rt_vars.ui8_offroad_power_limit_enabled =
-			ui_vars.ui8_offroad_power_limit_enabled;
-	rt_vars.ui8_offroad_power_limit_div25 =
-			ui_vars.ui8_offroad_power_limit_div25;
   rt_vars.ui8_street_mode_speed_limit = ui_vars.ui8_street_mode_speed_limit;
 
   rt_vars.ui8_pedal_cadence_fast_stop = ui_vars.ui8_pedal_cadence_fast_stop;
