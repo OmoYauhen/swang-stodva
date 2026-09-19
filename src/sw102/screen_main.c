@@ -45,7 +45,6 @@ struct GraphData {
 static int graph_head;
 static struct GraphData graph_speed;
 static struct GraphData graph_motor_power;
-static struct GraphData graph_cadence;
 
 static void graph_append(struct GraphData *gd, int v)
 {
@@ -201,7 +200,6 @@ static void main_idle()
 		if (ui->ui16_wheel_speed_x10 > 0) {
 			graph_append(&graph_speed, ui->ui16_wheel_speed_x10/3); 	// 0- 76
 			graph_append(&graph_motor_power, ui->ui16_battery_power/4);	// 0-1024W
-			graph_append(&graph_cadence, ui->ui8_pedal_cadence_filtered);	// 0-255
 			graph_head=(graph_head+1) % GRAPH_DEPTH;
 		}
 	}

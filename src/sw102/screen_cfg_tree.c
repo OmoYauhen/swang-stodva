@@ -61,11 +61,6 @@ static const struct configtree_t cfgroot[] = {
 		{ "RX packets",       F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.rx_count), 0, "" }},
 		{ "Checksum fails",   F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.chk_fail_count), 0, "" }},
 		{ "Reply timeouts",   F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.timeout_count), 0, "" }},
-		// ---- Stubs, revisit later ----
-		// BBSHD reports no pedal cadence over the display protocol; this
-		// currently reads a hard-coded 99. Revisit when we decide whether
-		// to synthesise from PAS state or hide the field.
-		{ "Cadence (stub)",   F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_pedal_cadence), 0, "rpm" }},
 		{},
 	}}},
 	{}

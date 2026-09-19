@@ -278,14 +278,6 @@ static void bafang_apply_directs(void) {
     if (g_bafang.rx_count > 0) {
         ui8_g_battery_soc = g_bafang.battery_pct;
     }
-    // BBSHD doesn't report pedal cadence over the display protocol (only
-    // internal PAS pulse count is available, not RPM). Stub it at a
-    // sentinel value so UI fields dependent on cadence render *something*
-    // recognisable — revisit once we decide whether to synthesise it from
-    // PAS state, expose it via bbs-fw's config-tool protocol, or hide the
-    // cadence widgets entirely for BBSHD builds.
-    rt_vars.ui8_pedal_cadence = 99;
-    rt_vars.ui8_pedal_cadence_filtered = 99;
 }
 
 // The odometer, trip distance and trip average-speed integrators all key off
@@ -419,24 +411,6 @@ static void rt_calc_odometer(void) {
 	}
 }
 
-static void rt_low_pass_filter_pedal_cadence(void) {
-	static uint16_t ui16_pedal_cadence_accumulated = 0;
-
-	// low pass filter
-	ui16_pedal_cadence_accumulated -= (ui16_pedal_cadence_accumulated
-			>> PEDAL_CADENCE_FILTER_COEFFICIENT);
-	ui16_pedal_cadence_accumulated += (uint16_t) rt_vars.ui8_pedal_cadence;
-
-	// consider the filtered value only for medium and high values of the unfiltered value
-	if (rt_vars.ui8_pedal_cadence > 20) {
-		rt_vars.ui8_pedal_cadence_filtered =
-				(uint8_t) (ui16_pedal_cadence_accumulated
-						>> PEDAL_CADENCE_FILTER_COEFFICIENT);
-	} else {
-		rt_vars.ui8_pedal_cadence_filtered = rt_vars.ui8_pedal_cadence;
-	}
-}
-
 uint8_t rt_first_time_management(void) {
   static uint32_t ui32_counter = 0;
 	static uint8_t ui8_motor_controller_init = 1;
@@ -486,8 +460,6 @@ void copy_rt_to_ui_vars(void) {
 	ui_vars.ui8_duty_cycle = rt_vars.ui8_duty_cycle;
 	ui_vars.ui8_error_states = rt_vars.ui8_error_states;
 	ui_vars.ui16_wheel_speed_x10 = rt_vars.ui16_wheel_speed_x10;
-	ui_vars.ui8_pedal_cadence = rt_vars.ui8_pedal_cadence;
-	ui_vars.ui8_pedal_cadence_filtered = rt_vars.ui8_pedal_cadence_filtered;
 	ui_vars.ui8_motor_temperature = rt_vars.ui8_motor_temperature;
 	ui_vars.ui16_battery_voltage_filtered_x10 =
 			rt_vars.ui16_battery_voltage_filtered_x10;
@@ -573,7 +545,6 @@ void rt_processing(void)
   // now do all the calculations that must be done every 100ms
   bafang_synth_wheel_ticks();   // feed the distance integrators (no tick counter on the wire)
   rt_low_pass_filter_battery_voltage_current_power();
-  rt_low_pass_filter_pedal_cadence();
   rt_calc_odometer();
   /************************************************************************************************/
   rt_first_time_management();
