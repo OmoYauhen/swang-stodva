@@ -53,12 +53,6 @@ typedef struct eeprom_data {
 	uint16_t ui16_wheel_perimeter;
 	uint8_t ui8_units_type;
 	uint8_t ui8_time_field_enable;
-	uint8_t ui8_target_max_battery_power_div25;
-  uint8_t ui8_motor_current_min_adc;
-  uint8_t ui8_field_weakening;
-	uint8_t ui8_motor_type;
-	uint8_t ui8_motor_current_control_mode;
-	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
 	uint16_t ui16_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_number_of_assist_levels;
 	uint8_t ui8_startup_motor_power_boost_feature_enabled;
@@ -78,9 +72,6 @@ typedef struct eeprom_data {
 	uint32_t ui32_odometer_x10;
 	uint8_t ui8_walk_assist_feature_enabled;
 	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
-
-	uint8_t ui8_battery_soc_increment_decrement;
-	uint8_t ui8_buttons_up_down_invert;
 
 	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
   uint8_t graphs_field_selectors[3]; // 3 screen main pages
@@ -119,11 +110,6 @@ typedef struct eeprom_data {
 #define DEAFULT_VALUE_TIME_FIELD                                    1 // 1 i show clock
 #define DEFAULT_VALUE_MOTOR_POWER_OPTION                            3  // 3 = 1000W (BBSHD stock)
 #define DEFAULT_VALUE_BLE_BROADCAST_ENABLED                         1  // on by default
-#define DEFAULT_VALUE_CURRENT_MIN_ADC                               1 // 1 unit, 0.156 A
-#define DEFAULT_VALUE_TARGET_MAX_BATTERY_POWER                      60 // e.g. 20 = 20 * 25 = 500, 0 is disabled
-#define DEFAULT_VALUE_MOTOR_CURRENT_CONTROL_MODE                    1 // 0 power; 1 torque
-#define DEFAULT_VALUE_MOTOR_TYPE                                    0 // 0 = 48V
-#define DEFAULT_VALUE_MOTOR_ASSISTANCE_WITHOUT_PEDAL_ROTATION       0 // 0 to keep this feature disable
 #define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_1                         5 // 0.005 and each next increase +33%
 #define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_2                         9
 #define DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_3                         12
@@ -198,11 +184,9 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_OFFROAD_POWER_LIMIT_ENABLED                   0
 #define DEFAULT_VALUE_OFFROAD_POWER_LIMIT_DIV25                     10 //10 * 25 = 250W
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
-#define DEFAULT_VALUE_BUTTONS_UP_DOWN_INVERT                        0 // regular state
 #define DEFAULT_VALUE_X_AXIS_SCALE                                  0 // 15m
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h
 #define DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE                      0 // disabled
-#define DEFAULT_FIELD_WEAKENING                                     1 // 1 enabled
 #define DEFAULT_ADC_LIGHTS_CURRENT_OFFSET                           1
 #define DEFAULT_THROTTLE_VIRTUAL_STEP                               5
 

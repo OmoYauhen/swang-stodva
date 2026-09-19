@@ -26,12 +26,6 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_number_of_assist_levels;
 	uint16_t ui16_wheel_perimeter;
 	uint8_t ui8_units_type;
-	uint8_t ui8_target_max_battery_power_div25;
-  uint8_t ui8_motor_current_min_adc;
-  uint8_t ui8_field_weakening;
-	uint8_t ui8_motor_type;
-	uint8_t ui8_motor_current_control_mode;
-	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
 	uint16_t ui16_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_walk_assist_feature_enabled;
 	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
@@ -103,14 +97,8 @@ typedef struct ui_vars_struct {
 	uint16_t ui16_wheel_perimeter;
 	uint8_t ui8_units_type;
 	uint8_t ui8_time_field_enable;
-	uint8_t ui8_target_max_battery_power_div25;
 	uint8_t ui8_motor_power_option; // index into motor_power_options_w[]: 0=250W 1=500W 2=750W 3=1000W
 	uint8_t ui8_ble_broadcast_enabled; // 0 = mute BLE telemetry notifications, 1 = broadcast
-	uint8_t ui8_motor_current_min_adc;
-	uint8_t ui8_field_weakening;
-	uint8_t ui8_motor_type;
-	uint8_t ui8_motor_current_control_mode;
-	uint8_t ui8_motor_assistance_startup_without_pedal_rotation;
 	uint16_t ui16_assist_level_factor[ASSIST_LEVEL_NUMBER];
 	uint8_t ui8_walk_assist_feature_enabled;
 	uint8_t ui8_walk_assist_level_factor[ASSIST_LEVEL_NUMBER];
@@ -146,7 +134,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
 	uint8_t ui8_offroad_mode;
-	uint8_t ui8_buttons_up_down_invert;
 
 	uint8_t field_selectors[NUM_CUSTOMIZABLE_FIELDS]; // this array is opaque to the app, but the screen layer uses it to store which field is being displayed (it is stored to EEPROM)
 	uint8_t graphs_field_selectors[3]; // 3 screen main pages

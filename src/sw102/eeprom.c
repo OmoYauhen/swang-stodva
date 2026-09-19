@@ -24,14 +24,8 @@ const eeprom_data_t m_eeprom_data_defaults = {
   .ui16_wheel_perimeter = DEFAULT_VALUE_WHEEL_PERIMETER,
   .ui8_units_type = DEFAULT_VALUE_UNITS_TYPE,
   .ui8_time_field_enable = DEAFULT_VALUE_TIME_FIELD,
-  .ui8_target_max_battery_power_div25 = DEFAULT_VALUE_TARGET_MAX_BATTERY_POWER,
   .ui8_motor_power_option = DEFAULT_VALUE_MOTOR_POWER_OPTION,
   .ui8_ble_broadcast_enabled = DEFAULT_VALUE_BLE_BROADCAST_ENABLED,
-  .ui8_motor_current_min_adc = DEFAULT_VALUE_CURRENT_MIN_ADC,
-  .ui8_field_weakening = DEFAULT_FIELD_WEAKENING,
-  .ui8_motor_type = DEFAULT_VALUE_MOTOR_TYPE,
-  .ui8_motor_current_control_mode = DEFAULT_VALUE_MOTOR_CURRENT_CONTROL_MODE,
-  .ui8_motor_assistance_startup_without_pedal_rotation = DEFAULT_VALUE_MOTOR_ASSISTANCE_WITHOUT_PEDAL_ROTATION,
   .ui16_assist_level_factor = {
   DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_1,
   DEFAULT_VALUE_ASSIST_LEVEL_FACTOR_2,
@@ -137,7 +131,6 @@ const eeprom_data_t m_eeprom_data_defaults = {
 
   .showNextScreenIndex = 0,
   .x_axis_scale = DEFAULT_VALUE_X_AXIS_SCALE,
-  .ui8_buttons_up_down_invert = DEFAULT_VALUE_BUTTONS_UP_DOWN_INVERT,
 
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
   .ui8_pedal_cadence_fast_stop = DEFAULT_PEDAL_CADENCE_FAST_STOP_ENABLE,
@@ -196,20 +189,10 @@ void eeprom_init_variables(void) {
 	ui_vars->ui8_units_type = m_eeprom_data.ui8_units_type;
   ui_vars->ui8_time_field_enable =
       m_eeprom_data.ui8_time_field_enable;
-  ui_vars->ui8_target_max_battery_power_div25 =
-      m_eeprom_data.ui8_target_max_battery_power_div25;
   ui_vars->ui8_motor_power_option =
       m_eeprom_data.ui8_motor_power_option;
   ui_vars->ui8_ble_broadcast_enabled =
       m_eeprom_data.ui8_ble_broadcast_enabled;
-  ui_vars->ui8_motor_current_min_adc =
-      m_eeprom_data.ui8_motor_current_min_adc;
-  ui_vars->ui8_field_weakening =
-      m_eeprom_data.ui8_field_weakening;
-	ui_vars->ui8_motor_type = m_eeprom_data.ui8_motor_type;
-	ui_vars->ui8_motor_current_control_mode = m_eeprom_data.ui8_motor_current_control_mode;
-	ui_vars->ui8_motor_assistance_startup_without_pedal_rotation =
-			m_eeprom_data.ui8_motor_assistance_startup_without_pedal_rotation;
 	COPY_ARRAY(ui_vars, &m_eeprom_data, ui16_assist_level_factor);
 	ui_vars->ui8_number_of_assist_levels =
 			m_eeprom_data.ui8_number_of_assist_levels;
@@ -247,7 +230,6 @@ void eeprom_init_variables(void) {
 	COPY_ARRAY(ui_vars, &m_eeprom_data, ui8_walk_assist_level_factor);
 	COPY_ARRAY(ui_vars, &m_eeprom_data, field_selectors);
 	COPY_ARRAY(ui_vars, &m_eeprom_data, graphs_field_selectors);
-  ui_vars->ui8_buttons_up_down_invert = m_eeprom_data.ui8_buttons_up_down_invert;
 
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
@@ -284,20 +266,10 @@ void eeprom_write_variables(void) {
 	m_eeprom_data.ui8_units_type = ui_vars->ui8_units_type;
   m_eeprom_data.ui8_time_field_enable =
       ui_vars->ui8_time_field_enable;
-  m_eeprom_data.ui8_target_max_battery_power_div25 =
-      ui_vars->ui8_target_max_battery_power_div25;
   m_eeprom_data.ui8_motor_power_option =
       ui_vars->ui8_motor_power_option;
   m_eeprom_data.ui8_ble_broadcast_enabled =
       ui_vars->ui8_ble_broadcast_enabled;
-  m_eeprom_data.ui8_motor_current_min_adc =
-      ui_vars->ui8_motor_current_min_adc;
-  m_eeprom_data.ui8_field_weakening =
-      ui_vars->ui8_field_weakening;
-	m_eeprom_data.ui8_motor_type = ui_vars->ui8_motor_type;
-	m_eeprom_data.ui8_motor_current_control_mode = ui_vars->ui8_motor_current_control_mode;
-	m_eeprom_data.ui8_motor_assistance_startup_without_pedal_rotation =
-			ui_vars->ui8_motor_assistance_startup_without_pedal_rotation;
 	COPY_ARRAY(&m_eeprom_data, ui_vars, ui16_assist_level_factor);
 	m_eeprom_data.ui8_number_of_assist_levels =
 			ui_vars->ui8_number_of_assist_levels;
@@ -335,7 +307,6 @@ void eeprom_write_variables(void) {
 	COPY_ARRAY(&m_eeprom_data, ui_vars, ui8_walk_assist_level_factor);
 	COPY_ARRAY(&m_eeprom_data, ui_vars, field_selectors);
   COPY_ARRAY(&m_eeprom_data, ui_vars, graphs_field_selectors);
-  m_eeprom_data.ui8_buttons_up_down_invert = ui_vars->ui8_buttons_up_down_invert;
 
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;

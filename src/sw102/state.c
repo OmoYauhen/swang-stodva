@@ -603,14 +603,7 @@ void copy_rt_to_ui_vars(void) {
 	rt_vars.ui8_lights = ui_vars.ui8_lights;
 	rt_vars.ui8_walk_assist = ui_vars.ui8_walk_assist;
 	rt_vars.ui8_offroad_mode = ui_vars.ui8_offroad_mode;
-	rt_vars.ui8_motor_current_min_adc = ui_vars.ui8_motor_current_min_adc;
-	rt_vars.ui8_field_weakening = ui_vars.ui8_field_weakening;
-	rt_vars.ui8_target_max_battery_power_div25 = ui_vars.ui8_target_max_battery_power_div25;
 	rt_vars.ui16_wheel_perimeter = ui_vars.ui16_wheel_perimeter;
-	rt_vars.ui8_motor_type = ui_vars.ui8_motor_type;
-	rt_vars.ui8_motor_current_control_mode = ui_vars.ui8_motor_current_control_mode;
-	rt_vars.ui8_motor_assistance_startup_without_pedal_rotation =
-			ui_vars.ui8_motor_assistance_startup_without_pedal_rotation;
 	rt_vars.ui8_startup_motor_power_boost_always =
 			ui_vars.ui8_startup_motor_power_boost_always;
 	rt_vars.ui8_startup_motor_power_boost_limit_power =
