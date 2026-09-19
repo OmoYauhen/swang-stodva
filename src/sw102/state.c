@@ -402,19 +402,6 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
       (rt_vars.ui16_battery_current_filtered_x5 * rt_vars.ui16_battery_voltage_filtered_x10) / 50;
 }
 
-void rt_low_pass_filter_pedal_power(void) {
-	static uint32_t ui32_pedal_power_accumulated = 0;
-
-	// low pass filter
-	ui32_pedal_power_accumulated -= ui32_pedal_power_accumulated
-			>> PEDAL_POWER_FILTER_COEFFICIENT;
-	ui32_pedal_power_accumulated += (uint32_t) rt_vars.ui16_pedal_power_x10
-			/ 10;
-	rt_vars.ui16_pedal_power_filtered =
-			((uint32_t) (ui32_pedal_power_accumulated
-					>> PEDAL_POWER_FILTER_COEFFICIENT));
-}
-
 static void rt_calc_odometer(void) {
   static uint8_t ui8_1s_timer_counter;
   static uint32_t ui32_remainder = 0;
@@ -574,18 +561,11 @@ void copy_rt_to_ui_vars(void) {
 	ui_vars.ui16_adc_battery_voltage = rt_vars.ui16_adc_battery_voltage;
 	ui_vars.ui8_battery_current_x5 = rt_vars.ui8_battery_current_x5;
 	ui_vars.ui8_motor_current_x5 = rt_vars.ui8_motor_current_x5;
-	ui_vars.ui8_throttle = rt_vars.ui8_throttle;
-	ui_vars.ui16_adc_pedal_torque_sensor = rt_vars.ui16_adc_pedal_torque_sensor;
-	ui_vars.ui8_pedal_weight_with_offset = rt_vars.ui8_pedal_weight_with_offset;
-	ui_vars.ui8_pedal_weight = rt_vars.ui8_pedal_weight;
 	ui_vars.ui8_duty_cycle = rt_vars.ui8_duty_cycle;
 	ui_vars.ui8_error_states = rt_vars.ui8_error_states;
 	ui_vars.ui16_wheel_speed_x10 = rt_vars.ui16_wheel_speed_x10;
 	ui_vars.ui8_pedal_cadence = rt_vars.ui8_pedal_cadence;
 	ui_vars.ui8_pedal_cadence_filtered = rt_vars.ui8_pedal_cadence_filtered;
-	ui_vars.ui16_motor_speed_erps = rt_vars.ui16_motor_speed_erps;
-	ui_vars.ui8_motor_hall_sensors = rt_vars.ui8_motor_hall_sensors;
-	ui_vars.ui8_pas_pedal_right = rt_vars.ui8_pas_pedal_right;
 	ui_vars.ui8_motor_temperature = rt_vars.ui8_motor_temperature;
 	ui_vars.ui32_wheel_speed_sensor_tick_counter =
 			rt_vars.ui32_wheel_speed_sensor_tick_counter;
@@ -596,9 +576,7 @@ void copy_rt_to_ui_vars(void) {
   ui_vars.ui16_motor_current_filtered_x5 =
       rt_vars.ui16_motor_current_filtered_x5;
 	ui_vars.ui16_battery_power = rt_vars.ui16_battery_power_filtered;
-	ui_vars.ui16_pedal_power = rt_vars.ui16_pedal_power_filtered;
 	ui_vars.ui8_braking = rt_vars.ui8_braking;
-	ui_vars.ui8_foc_angle = (((uint16_t) rt_vars.ui8_foc_angle) * 14) / 10; // each units is equal to 1.4 degrees ((360 degrees / 256) = 1.4)
 
 	ui_vars.ui32_trip_a_distance_x1000 = rt_vars.ui32_trip_a_distance_x1000;
   ui_vars.ui32_trip_a_distance_x100 = rt_vars.ui32_trip_a_distance_x1000 / 10;  
@@ -729,7 +707,6 @@ void rt_processing(void)
   // now do all the calculations that must be done every 100ms
   bafang_synth_wheel_ticks();   // feed the distance integrators (no tick counter on the wire)
   rt_low_pass_filter_battery_voltage_current_power();
-  rt_low_pass_filter_pedal_power();
   rt_low_pass_filter_pedal_cadence();
   rt_calc_odometer();
   rt_calc_trips();

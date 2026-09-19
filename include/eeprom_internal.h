@@ -30,8 +30,21 @@
 // 0x43: TSDZ2 purge — removed torque_sensor_calibration_*, torque_sensor_filter,
 // torque_sensor_adc_threshold, coast_brake_adc, coast_brake_enable fields
 // (Bafang has no display-side torque calibration or coast-brake ADC concept).
-#define EEPROM_MIN_COMPAT_VERSION 0x43
-#define EEPROM_VERSION 0x43
+// 0x44: TSDZ2 purge round 2 — removed remaining TSDZ2 controller settings that
+// the display never transmits to a Bafang motor (motor_current_min_adc,
+// field_weakening, target_max_battery_power_div25, motor_current_control_mode,
+// motor_type, motor_assistance_startup_without_pedal_rotation,
+// battery_soc_increment_decrement, buttons_up_down_invert), the startup-power-boost
+// feature (feature_enabled, always, limit_power, time, fade_time,
+// startup_motor_power_boost_factor[]), the TSDZ2 offroad/street-mode set
+// (offroad_feature_enabled/enabled_on_startup/speed_limit/power_limit_enabled/
+// power_limit_div25), 850C main-screen bookkeeping (field_selectors[],
+// graphs_field_selectors[], x_axis_scale, showNextScreenIndex),
+// miscellaneous TSDZ2 knobs (pedal_cadence_fast_stop, adc_lights_current_offset,
+// throttle_virtual_step). Also shrank assist_level_factor[] /
+// walk_assist_level_factor[] arrays from 20 to 9 slots (Bafang PAS caps at 9).
+#define EEPROM_MIN_COMPAT_VERSION 0x44
+#define EEPROM_VERSION 0x44
 
 typedef struct eeprom_data {
 	uint8_t eeprom_version; // Used to detect changes in eeprom encoding, if != EEPROM_VERSION we will not use it

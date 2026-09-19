@@ -44,7 +44,6 @@ struct GraphData {
 };
 static int graph_head;
 static struct GraphData graph_speed;
-static struct GraphData graph_pedal_power;
 static struct GraphData graph_motor_power;
 static struct GraphData graph_cadence;
 
@@ -76,7 +75,6 @@ enum display_mode_t {
 	ModeTripDistance,
 	ModeTripTime,
 	ModeTripAVS,
-	ModePedalPower,
 	ModeMotorPower,
 	ModeLast,
 } display_mode;
@@ -86,7 +84,6 @@ static struct GraphData * const mode_graph[] = {
 	NULL,
 	NULL,
 	NULL,
-	&graph_pedal_power,
 	&graph_motor_power,
 };
 
@@ -133,11 +130,6 @@ static void draw_2nd_field(ui_vars_t *ui, int y)
 	case ModeTripAVS:
 		m = ui->ui16_trip_a_avg_speed_x10;
 		sprintf(buf, "%d.%01d km/h", m/10, m%10);
-		break;
-
-	case ModePedalPower:
-		m = ui->ui16_pedal_power;
-		sprintf(buf, "%d W", m);
 		break;
 
 	case ModeMotorPower:
@@ -241,7 +233,6 @@ static void main_idle()
 	if(!(tick&15)){
 		if (ui->ui16_wheel_speed_x10 > 0) {
 			graph_append(&graph_speed, ui->ui16_wheel_speed_x10/3); 	// 0- 76
-			graph_append(&graph_pedal_power, ui->ui16_pedal_power/2);	// 0- 512W
 			graph_append(&graph_motor_power, ui->ui16_battery_power/4);	// 0-1024W
 			graph_append(&graph_cadence, ui->ui8_pedal_cadence_filtered);	// 0-255
 			graph_head=(graph_head+1) % GRAPH_DEPTH;
