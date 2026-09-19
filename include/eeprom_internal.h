@@ -1,5 +1,5 @@
 /*
- * Bafang LCD 850C firmware
+ * Bafang SW102 firmware
  *
  * Copyright (C) Casainho, 2018.
  *

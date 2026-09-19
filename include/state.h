@@ -146,7 +146,7 @@ extern struct bafang_state_t g_bafang;
 // Battery voltage (readed on motor controller):
 #define ADC_BATTERY_VOLTAGE_PER_ADC_STEP_X10000 866
 
-// Battery voltage (readed on LCD3):
+// Battery voltage (read from ADC):
 // 30.0V --> 447 | 0.0671 volts per each ADC unit
 // 40.0V --> 595 | 0.0672 volts per each ADC unit
 
