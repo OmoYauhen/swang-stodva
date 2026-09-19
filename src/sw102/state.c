@@ -1,5 +1,5 @@
 /*
- * Bafang LCD 850C firmware
+ * Bafang SW102 firmware
  *
  * Copyright (C) Casainho, 2018.
  *
@@ -278,14 +278,6 @@ static void bafang_apply_directs(void) {
     if (g_bafang.rx_count > 0) {
         ui8_g_battery_soc = g_bafang.battery_pct;
     }
-    // BBSHD doesn't report pedal cadence over the display protocol (only
-    // internal PAS pulse count is available, not RPM). Stub it at a
-    // sentinel value so UI fields dependent on cadence render *something*
-    // recognisable — revisit once we decide whether to synthesise it from
-    // PAS state, expose it via bbs-fw's config-tool protocol, or hide the
-    // cadence widgets entirely for BBSHD builds.
-    rt_vars.ui8_pedal_cadence = 99;
-    rt_vars.ui8_pedal_cadence_filtered = 99;
 }
 
 // The odometer, trip distance and trip average-speed integrators all key off
@@ -366,7 +358,6 @@ static uint16_t fakeRandom(uint32_t *storage, uint16_t minv, uint16_t maxv) {
 void rt_low_pass_filter_battery_voltage_current_power(void) {
 	static uint32_t ui32_battery_voltage_accumulated_x10000 = 0;
 	static uint16_t ui16_battery_current_accumulated_x5 = 0;
-  static uint16_t ui16_motor_current_accumulated_x5 = 0;
 
 	// low pass filter battery voltage
 	ui32_battery_voltage_accumulated_x10000 -=
@@ -386,15 +377,6 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
 	rt_vars.ui16_battery_current_filtered_x5 =
 			ui16_battery_current_accumulated_x5
 					>> BATTERY_CURRENT_FILTER_COEFFICIENT;
-
-  // low pass filter motor current
-  ui16_motor_current_accumulated_x5 -= ui16_motor_current_accumulated_x5
-      >> MOTOR_CURRENT_FILTER_COEFFICIENT;
-  ui16_motor_current_accumulated_x5 +=
-      (uint16_t) rt_vars.ui8_motor_current_x5;
-  rt_vars.ui16_motor_current_filtered_x5 =
-      ui16_motor_current_accumulated_x5
-          >> MOTOR_CURRENT_FILTER_COEFFICIENT;
 
   // base battery power = I × V (no resistance-based loss term; the pack-resistance
   // config and its P = R·I² adder were removed as dead code).
@@ -426,85 +408,6 @@ static void rt_calc_odometer(void) {
 			rt_vars.ui32_wheel_speed_sensor_tick_counter_offset =
 					rt_vars.ui32_wheel_speed_sensor_tick_counter;
 		}
-	}
-}
-
-static void rt_calc_trips(void) {
-  static uint8_t ui8_1s_timer_counter = 0;
-  static uint8_t ui8_3s_timer_counter = 0;
-  static uint32_t ui32_wheel_speed_sensor_tick_counter_offset = 0;
-  static uint32_t ui32_remainder = 0;
-  
-  // used to determine if trip avg speed values have to be calculated :
-  // - on first time this function is called ; so set by dfault to 1
-  // - then every 1 meter traveled
-  static uint8_t ui8_calc_avg_speed_flag = 1;
-
-  // calculate how many revolutions since last reset ...
-  uint32_t wheel_ticks = rt_vars.ui32_wheel_speed_sensor_tick_counter
-      - ui32_wheel_speed_sensor_tick_counter_offset;
-
-  // ... and convert to distance traveled
-  uint32_t ui32_temp = wheel_ticks * ((uint32_t) rt_vars.ui16_wheel_perimeter) + ui32_remainder;
-
-  // if traveled distance is more than 1 wheel turn update trip variables and reset
-  if (wheel_ticks >= 1) { 
- 
-    ui8_calc_avg_speed_flag = 1;
-
-    // update all trip distance variables
-    rt_vars.ui32_trip_a_distance_x1000 += (ui32_temp / 1000);
-    rt_vars.ui32_trip_b_distance_x1000 += (ui32_temp / 1000);
-    ui32_remainder = ui32_temp % 1000;
-
-    // update trip A max speed
-    if (rt_vars.ui16_wheel_speed_x10 > rt_vars.ui16_trip_a_max_speed_x10)
-      rt_vars.ui16_trip_a_max_speed_x10 = rt_vars.ui16_wheel_speed_x10;
-
-    // update trip B max speed
-    if (rt_vars.ui16_wheel_speed_x10 > rt_vars.ui16_trip_b_max_speed_x10)
-      rt_vars.ui16_trip_b_max_speed_x10 = rt_vars.ui16_wheel_speed_x10;
-    
-    // reset the always incrementing value (up to motor controller power reset) by setting the offset to current value
-    ui32_wheel_speed_sensor_tick_counter_offset =	rt_vars.ui32_wheel_speed_sensor_tick_counter;
-
-  }
-
-  // calculate trip A and B average speeds (every 3s)
-  if (ui8_calc_avg_speed_flag == 1 && ++ui8_3s_timer_counter >= 30) {
-    rt_vars.ui16_trip_a_avg_speed_x10 = rt_vars.ui32_trip_a_time ? (rt_vars.ui32_trip_a_distance_x1000 * 36) / rt_vars.ui32_trip_a_time : 0;
-    rt_vars.ui16_trip_b_avg_speed_x10 = rt_vars.ui32_trip_b_time ? (rt_vars.ui32_trip_b_distance_x1000 * 36) / rt_vars.ui32_trip_b_time : 0;
-    
-    // reset 3s timer counter and flag
-    ui8_calc_avg_speed_flag = 0;    
-    ui8_3s_timer_counter = 0;
-  }
-
-  // at 1s rate : update all trip time variables if wheel is turning
-  if (++ui8_1s_timer_counter >= 10) {
-    if (rt_vars.ui16_wheel_speed_x10 > 0) {
-      rt_vars.ui32_trip_a_time += 1;
-      rt_vars.ui32_trip_b_time += 1;
-    }
-    ui8_1s_timer_counter = 0;
-  }
-}
-
-static void rt_low_pass_filter_pedal_cadence(void) {
-	static uint16_t ui16_pedal_cadence_accumulated = 0;
-
-	// low pass filter
-	ui16_pedal_cadence_accumulated -= (ui16_pedal_cadence_accumulated
-			>> PEDAL_CADENCE_FILTER_COEFFICIENT);
-	ui16_pedal_cadence_accumulated += (uint16_t) rt_vars.ui8_pedal_cadence;
-
-	// consider the filtered value only for medium and high values of the unfiltered value
-	if (rt_vars.ui8_pedal_cadence > 20) {
-		rt_vars.ui8_pedal_cadence_filtered =
-				(uint8_t) (ui16_pedal_cadence_accumulated
-						>> PEDAL_CADENCE_FILTER_COEFFICIENT);
-	} else {
-		rt_vars.ui8_pedal_cadence_filtered = rt_vars.ui8_pedal_cadence;
 	}
 }
 
@@ -553,37 +456,17 @@ void rt_processing_start(void) {
  *
  */
 void copy_rt_to_ui_vars(void) {
-	ui_vars.ui16_adc_battery_voltage = rt_vars.ui16_adc_battery_voltage;
 	ui_vars.ui8_battery_current_x5 = rt_vars.ui8_battery_current_x5;
-	ui_vars.ui8_motor_current_x5 = rt_vars.ui8_motor_current_x5;
 	ui_vars.ui8_duty_cycle = rt_vars.ui8_duty_cycle;
 	ui_vars.ui8_error_states = rt_vars.ui8_error_states;
 	ui_vars.ui16_wheel_speed_x10 = rt_vars.ui16_wheel_speed_x10;
-	ui_vars.ui8_pedal_cadence = rt_vars.ui8_pedal_cadence;
-	ui_vars.ui8_pedal_cadence_filtered = rt_vars.ui8_pedal_cadence_filtered;
 	ui_vars.ui8_motor_temperature = rt_vars.ui8_motor_temperature;
-	ui_vars.ui32_wheel_speed_sensor_tick_counter =
-			rt_vars.ui32_wheel_speed_sensor_tick_counter;
 	ui_vars.ui16_battery_voltage_filtered_x10 =
 			rt_vars.ui16_battery_voltage_filtered_x10;
 	ui_vars.ui16_battery_current_filtered_x5 =
 			rt_vars.ui16_battery_current_filtered_x5;
-  ui_vars.ui16_motor_current_filtered_x5 =
-      rt_vars.ui16_motor_current_filtered_x5;
 	ui_vars.ui16_battery_power = rt_vars.ui16_battery_power_filtered;
 	ui_vars.ui8_braking = rt_vars.ui8_braking;
-
-	ui_vars.ui32_trip_a_distance_x1000 = rt_vars.ui32_trip_a_distance_x1000;
-  ui_vars.ui32_trip_a_distance_x100 = rt_vars.ui32_trip_a_distance_x1000 / 10;  
-  ui_vars.ui32_trip_a_time = rt_vars.ui32_trip_a_time;
-  ui_vars.ui16_trip_a_avg_speed_x10 = rt_vars.ui16_trip_a_avg_speed_x10;
-  ui_vars.ui16_trip_a_max_speed_x10 = rt_vars.ui16_trip_a_max_speed_x10;
-
-  ui_vars.ui32_trip_b_distance_x1000 = rt_vars.ui32_trip_b_distance_x1000;
-  ui_vars.ui32_trip_b_distance_x100 = rt_vars.ui32_trip_b_distance_x1000 / 10;
-  ui_vars.ui32_trip_b_time = rt_vars.ui32_trip_b_time;
-  ui_vars.ui16_trip_b_avg_speed_x10 = rt_vars.ui16_trip_b_avg_speed_x10;
-  ui_vars.ui16_trip_b_max_speed_x10 = rt_vars.ui16_trip_b_max_speed_x10;
 
 	ui_vars.ui32_odometer_x10 = rt_vars.ui32_odometer_x10;
 
@@ -662,9 +545,7 @@ void rt_processing(void)
   // now do all the calculations that must be done every 100ms
   bafang_synth_wheel_ticks();   // feed the distance integrators (no tick counter on the wire)
   rt_low_pass_filter_battery_voltage_current_power();
-  rt_low_pass_filter_pedal_cadence();
   rt_calc_odometer();
-  rt_calc_trips();
   /************************************************************************************************/
   rt_first_time_management();
   bafang_apply_directs();

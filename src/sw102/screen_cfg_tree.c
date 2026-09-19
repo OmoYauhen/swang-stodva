@@ -5,8 +5,6 @@
 
 extern const struct screen screen_main;
 
-static void do_reset_trip_a(const struct configtree_t *ign);
-static void do_reset_trip_b(const struct configtree_t *ign);
 static void do_reset_ble(const struct configtree_t *ign);
 static void do_reset_all(const struct configtree_t *ign);
 static void do_pop_back(const struct configtree_t *ign);
@@ -18,11 +16,6 @@ static bool do_set_odometer(const struct configtree_t *ign, int wh);
 static const char *off_on[] = { "off", "on", 0 };
 
 static const struct configtree_t cfgroot[] = {
-	{ "Trip", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 18, 0, 128, (const struct configtree_t[]) {
-		{ "Reset trip A", F_BUTTON, .action = do_reset_trip_a },
-		{ "Reset trip B", F_BUTTON, .action = do_reset_trip_b },
-		{},
-	}}},
 	{ "PAS levels", F_BUTTON, .action = cfg_push_assist_screen },
 	// Wrap top-level numeric/options entries in single-item submenus so their edit
 	// view inherits winh=36 (roomy) instead of cfg_root's compact winh=18 — which
@@ -68,11 +61,6 @@ static const struct configtree_t cfgroot[] = {
 		{ "RX packets",       F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.rx_count), 0, "" }},
 		{ "Checksum fails",   F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.chk_fail_count), 0, "" }},
 		{ "Reply timeouts",   F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(g_bafang.timeout_count), 0, "" }},
-		// ---- Stubs, revisit later ----
-		// BBSHD reports no pedal cadence over the display protocol; this
-		// currently reads a hard-coded 99. Revisit when we decide whether
-		// to synthesise from PAS state or hide the field.
-		{ "Cadence (stub)",   F_NUMERIC|F_RO, .numeric = &(const struct cfgnumeric_t) { PTRSIZE(ui_vars.ui8_pedal_cadence), 0, "rpm" }},
 		{},
 	}}},
 	{}
@@ -124,25 +112,6 @@ static void set_walk_assist(int enabled)
 }
 static void do_set_walk_assist_off(const struct configtree_t *ign) { set_walk_assist(0); }
 static void do_set_walk_assist_on(const struct configtree_t *ign) { set_walk_assist(1); }
-
-static void do_reset_trip_a(const struct configtree_t *ign)
-{
-	// FIXME is accessing rt_vars safe here?
-	rt_vars.ui32_trip_a_distance_x1000 = 0;
-	rt_vars.ui32_trip_a_time = 0;
-	rt_vars.ui16_trip_a_avg_speed_x10 = 0;
-	rt_vars.ui16_trip_a_max_speed_x10 = 0;
-	sstack_pop();
-}
-
-static void do_reset_trip_b(const struct configtree_t *ign)
-{
-	rt_vars.ui32_trip_b_distance_x1000 = 0;
-	rt_vars.ui32_trip_b_time = 0;
-	rt_vars.ui16_trip_b_avg_speed_x10 = 0;
-	rt_vars.ui16_trip_b_max_speed_x10 = 0;
-	sstack_pop();
-}
 
 #if defined(NRF51)
 #include "peer_manager.h"

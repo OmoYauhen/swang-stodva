@@ -10,14 +10,11 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_duty_cycle;
 	uint8_t ui8_error_states;
 	uint16_t ui16_wheel_speed_x10;
-	uint8_t ui8_pedal_cadence;
 	uint8_t ui8_motor_temperature;
 	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
-	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power_filtered;
-	uint8_t ui8_pedal_cadence_filtered;
 	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
 
 	uint8_t ui8_assist_level;
@@ -29,16 +26,6 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint32_t ui32_odometer_x10;
 
-	uint32_t ui32_trip_a_distance_x1000;
-	uint32_t ui32_trip_a_time;
-	uint16_t ui16_trip_a_avg_speed_x10;
-	uint16_t ui16_trip_a_max_speed_x10;
-
-	uint32_t ui32_trip_b_distance_x1000;
-	uint32_t ui32_trip_b_time;
-  	uint16_t ui16_trip_b_avg_speed_x10;
-  	uint16_t ui16_trip_b_max_speed_x10;
-
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
@@ -48,21 +35,15 @@ typedef struct rt_vars_struct {
 } rt_vars_t;
 
 typedef struct ui_vars_struct {
-	uint16_t ui16_adc_battery_voltage;
 	uint8_t ui8_battery_current_x5;
-	uint8_t ui8_motor_current_x5;
 	uint8_t ui8_duty_cycle;
 	uint8_t ui8_error_states;
 	uint16_t ui16_wheel_speed_x10;
-	uint8_t ui8_pedal_cadence;
 	uint8_t ui8_motor_temperature;
-	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
-	uint16_t ui16_motor_current_filtered_x5;
 	uint16_t ui16_battery_power;
-	uint8_t ui8_pedal_cadence_filtered;
 
 	uint8_t ui8_assist_level;
 	uint8_t ui8_number_of_assist_levels;
@@ -77,108 +58,11 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint32_t ui32_odometer_x10;
 
-	uint32_t ui32_trip_a_distance_x1000;
-	uint32_t ui32_trip_a_distance_x100;
-	uint32_t ui32_trip_a_time;
-	uint16_t ui16_trip_a_avg_speed_x10;
-	uint16_t ui16_trip_a_max_speed_x10;
-
-	uint32_t ui32_trip_b_distance_x1000;
-	uint32_t ui32_trip_b_distance_x100;
-	uint32_t ui32_trip_b_time;
-  	uint16_t ui16_trip_b_avg_speed_x10;
-  	uint16_t ui16_trip_b_max_speed_x10;
-
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
 	uint8_t ui8_walk_assist;
 
 	uint8_t ui8_street_mode_speed_limit;
-
-  uint16_t var_speed_graph_auto_max_min;
-  uint16_t var_speed_graph_max_x10;
-  uint16_t var_speed_graph_min_x10;
-  uint16_t var_speed_auto_thresholds;
-  uint16_t var_speed_threshold_max_x10;
-  uint16_t var_speed_threshold_min_x10;
-
-  uint32_t var_trip_distance_graph_auto_max_min_x10;
-  uint32_t var_trip_distance_graph_max_x10;
-  uint32_t var_trip_distance_graph_min_x10;
-
-  uint32_t var_odo_graph_auto_max_min;
-  uint32_t var_odo_graph_max;
-  uint32_t var_odo_graph_min;
-
-  uint8_t var_cadence_graph_auto_max_min;
-  uint8_t var_cadence_graph_max;
-  uint8_t var_cadence_graph_min;
-  uint8_t var_cadence_auto_thresholds;
-  uint8_t var_cadence_threshold_max;
-  uint8_t var_cadence_threshold_min;
-
-  uint8_t var_human_power_graph_auto_max_min;
-  uint8_t var_human_power_graph_max;
-  uint8_t var_human_power_graph_min;
-  uint8_t var_human_power_auto_thresholds;
-  uint8_t var_human_power_threshold_max;
-  uint8_t var_human_power_threshold_min;
-
-  uint8_t var_battery_power_graph_auto_max_min;
-  uint8_t var_battery_power_graph_max;
-  uint8_t var_battery_power_graph_min;
-  uint8_t var_battery_power_auto_thresholds;
-  uint8_t var_battery_power_threshold_max;
-  uint8_t var_battery_power_threshold_min;
-
-  uint8_t var_battery_voltage_graph_auto_max_min;
-  uint8_t var_battery_voltage_graph_max;
-  uint8_t var_battery_voltage_graph_min;
-  uint8_t var_battery_voltage_auto_thresholds;
-  uint8_t var_battery_voltage_threshold_max;
-  uint8_t var_battery_voltage_threshold_min;
-
-  uint8_t var_battery_current_graph_auto_max_min;
-  uint8_t var_battery_current_graph_max;
-  uint8_t var_battery_current_graph_min;
-  uint8_t var_battery_current_auto_thresholds;
-  uint8_t var_battery_current_threshold_max;
-  uint8_t var_battery_current_threshold_min;
-
-  uint8_t var_battery_soc_graph_auto_max_min;
-  uint8_t var_battery_soc_graph_max;
-  uint8_t var_battery_soc_graph_min;
-  uint8_t var_battery_soc_auto_thresholds;
-  uint8_t var_battery_soc_threshold_max;
-  uint8_t var_battery_soc_threshold_min;
-
-  uint8_t var_motor_temp_graph_auto_max_min;
-  uint8_t var_motor_temp_graph_max;
-  uint8_t var_motor_temp_graph_min;
-  uint8_t var_motor_temp_auto_thresholds;
-  uint8_t var_motor_temp_threshold_max;
-  uint8_t var_motor_temp_threshold_min;
-
-  uint8_t var_motor_erps_graph_auto_max_min;
-  uint8_t var_motor_erps_graph_max;
-  uint8_t var_motor_erps_graph_min;
-  uint8_t var_motor_erps_auto_thresholds;
-  uint8_t var_motor_erps_threshold_max;
-  uint8_t var_motor_erps_threshold_min;
-
-  uint8_t var_motor_pwm_graph_auto_max_min;
-  uint8_t var_motor_pwm_graph_max;
-  uint8_t var_motor_pwm_graph_min;
-  uint8_t var_motor_pwm_auto_thresholds;
-  uint8_t var_motor_pwm_threshold_max;
-  uint8_t var_motor_pwm_threshold_min;
-
-  uint8_t var_motor_foc_graph_auto_max_min;
-  uint8_t var_motor_foc_graph_max;
-  uint8_t var_motor_foc_graph_min;
-  uint8_t var_motor_foc_auto_thresholds;
-  uint8_t var_motor_foc_threshold_max;
-  uint8_t var_motor_foc_threshold_min;
 } ui_vars_t;
 
 ui_vars_t* get_ui_vars(void);
@@ -236,7 +120,7 @@ extern struct bafang_state_t g_bafang;
 // Battery voltage (readed on motor controller):
 #define ADC_BATTERY_VOLTAGE_PER_ADC_STEP_X10000 866
 
-// Battery voltage (readed on LCD3):
+// Battery voltage (read from ADC):
 // 30.0V --> 447 | 0.0671 volts per each ADC unit
 // 40.0V --> 595 | 0.0672 volts per each ADC unit
 
@@ -244,6 +128,4 @@ extern struct bafang_state_t g_bafang;
 // 0 equal to no filtering and no delay, higher values will increase filtering but will also add bigger delay
 #define BATTERY_VOLTAGE_FILTER_COEFFICIENT 3
 #define BATTERY_CURRENT_FILTER_COEFFICIENT 2
-#define MOTOR_CURRENT_FILTER_COEFFICIENT   2
 #define PEDAL_POWER_FILTER_COEFFICIENT     3
-#define PEDAL_CADENCE_FILTER_COEFFICIENT   3
