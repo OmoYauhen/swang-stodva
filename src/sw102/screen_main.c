@@ -73,13 +73,17 @@ enum display_mode_t {
 	ModeOdometer,
 	ModeSessionDistance,
 	ModeMotorPower,
+	ModeDebug,
 	ModeLast,
 } display_mode;
 
+// ModeDebug takes over the whole screen (no speed, no graph), so no 2nd-field
+// graph is needed for it — but the array still has to be the right length.
 static struct GraphData * const mode_graph[] = {
 	NULL,
 	NULL,
 	&graph_motor_power,
+	NULL,
 };
 
 static void draw_main_speed(ui_vars_t *ui, int y)
@@ -196,11 +200,46 @@ static bool draw_fault_states(ui_vars_t *ui)
 	return true;
 }
 
+// Raw g_bafang field dump — one field per row, label on the left, value on the
+// right. Values are shown unscaled (V is voltage_x10, A is current_amp_x2) so
+// the numbers on screen match what the motor sends on the wire.
+static void draw_debug(void)
+{
+	extern const struct font font_full;
+	char buf[16];
+	int y = 2;
+
+#define DBG_ROW(label, val) do { \
+		font_text(&font_full, 0, y, (label), AlignLeft); \
+		sprintf(buf, "%u", (unsigned)(val)); \
+		font_text(&font_full, 64, y, buf, AlignRight); \
+		y += 14; \
+	} while(0)
+
+	DBG_ROW("st",  g_bafang.status);
+	DBG_ROW("rpm", g_bafang.wheel_rpm);
+	DBG_ROW("V",   g_bafang.battery_voltage_x10);
+	DBG_ROW("A",   g_bafang.current_amp_x2);
+	DBG_ROW("rng", g_bafang.range_field);
+	DBG_ROW("b%",  g_bafang.battery_pct);
+	DBG_ROW("mv",  g_bafang.moving);
+	DBG_ROW("rx",  g_bafang.rx_count);
+	DBG_ROW("err", g_bafang.chk_fail_count + g_bafang.timeout_count);
+
+#undef DBG_ROW
+}
+
 static void main_idle()
 {
 	char *ptr;
 	ui_vars_t *ui = get_ui_vars();
 	clear_all();
+
+	if (display_mode == ModeDebug) {
+		draw_debug();
+		lcd_refresh();
+		return;
+	}
 
 	if(!(tick&15)){
 		if (ui->ui16_wheel_speed_x10 > 0) {
