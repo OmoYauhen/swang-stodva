@@ -19,7 +19,7 @@
         pkgs = import nixpkgs { inherit system; };
         # Cosmetic package label only; the release version of record lives in
         # version.mk (VERSION_STRING), managed by the release workflow.
-        version = "0.0.2";
+        version = "0.0.3";
 
         # Terminal (ratatui) emulator — the Rust crate in emu-rs/, whose build.rs
         # compiles the firmware C via the cc crate. src is the whole repo so
