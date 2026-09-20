@@ -87,7 +87,7 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_ASSIST_LEVEL                                  1
 // Bafang PAS exposes a fixed choice of level counts: 3, 5 or 9.
 #define DEFAULT_VALUE_NUMBER_OF_ASSIST_LEVELS                       9
-#define DEFAULT_VALUE_WHEEL_PERIMETER                               2100 // 27.5'' wheel: 2100mm perimeter
+#define DEFAULT_VALUE_WHEEL_PERIMETER                               2165 // 27.5'' wheel: measured on-bike via the session-distance calibration screen
 #define DEFAULT_VALUE_UNITS_TYPE                                    0 // 0 = km/h
 #define DEAFULT_VALUE_TIME_FIELD                                    1 // 1 i show clock
 #define DEFAULT_VALUE_MOTOR_POWER_OPTION                            3  // 3 = 1000W (BBSHD stock)
