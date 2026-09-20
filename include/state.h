@@ -11,11 +11,9 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_error_states;
 	uint16_t ui16_wheel_speed_x10;
 	uint8_t ui8_motor_temperature;
-	uint32_t ui32_wheel_speed_sensor_tick_counter;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
 	uint16_t ui16_battery_power_filtered;
-	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
 
 	uint8_t ui8_assist_level;
 	uint8_t ui8_number_of_assist_levels;
@@ -40,7 +38,6 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_error_states;
 	uint16_t ui16_wheel_speed_x10;
 	uint8_t ui8_motor_temperature;
-	uint32_t ui32_wheel_speed_sensor_tick_counter_offset;
 	uint16_t ui16_battery_voltage_filtered_x10;
 	uint16_t ui16_battery_current_filtered_x5;
 	uint16_t ui16_battery_power;

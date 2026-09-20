@@ -284,24 +284,6 @@ static void bafang_apply_directs(void) {
     }
 }
 
-// The odometer, trip distance and trip average-speed integrators all key off
-// ui32_wheel_speed_sensor_tick_counter — a cumulative wheel-revolution count
-// the TSDZ2 motor used to report. The Bafang display protocol only reports
-// instantaneous wheel RPM (opcode 0x20), so nothing advances that counter and
-// distance would stay pinned at 0. Synthesise it here: at the 100 ms tick rate,
-// accumulate revolutions from the current RPM (one revolution == 600 rpm-ticks,
-// i.e. rpm/600 per 100 ms), keeping the sub-revolution remainder so slow speeds
-// aren't lost.
-static void bafang_synth_wheel_ticks(void) {
-    static uint32_t rpm_accumulator;   // 600 accumulated rpm == one revolution
-    rpm_accumulator += g_bafang.wheel_rpm;
-    while (rpm_accumulator >= 600) {
-        rpm_accumulator -= 600;
-        rt_vars.ui32_wheel_speed_sensor_tick_counter++;
-    }
-}
-
-
 rt_vars_t rt_vars;
 ui_vars_t ui_vars;
 
@@ -398,31 +380,23 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
       (rt_vars.ui16_battery_current_filtered_x5 * rt_vars.ui16_battery_voltage_filtered_x10) / 50;
 }
 
+// Called at 10 Hz. Bafang reports instantaneous wheel RPM directly from the
+// external wheel-speed sensor (magnet + reed on the frame), so we can integrate
+// straight to distance without an intermediate tick counter:
+//   revs_per_100ms   = rpm / 600            (60 rpm = 1 rev/s = 0.1 rev/100ms)
+//   mm_per_100ms     = revs_per_100ms * perimeter_mm
+//                    = (rpm * perimeter_mm) / 600
+// We accumulate (rpm * perimeter_mm) directly and threshold at 100_000 * 600 =
+// 60_000_000 (that's 100 m in "mm × 600"). Keeping the accumulator in the
+// scaled unit avoids losing sub-mm at low speeds. Max per-tick term stays well
+// below the threshold (e.g. 500 rpm × 2500 mm = 1.25M, ≈50 ticks headroom).
 static void rt_calc_odometer(void) {
-  static uint8_t ui8_1s_timer_counter;
-  static uint32_t ui32_remainder = 0;
-
-	// calc at 1s rate
-	if (++ui8_1s_timer_counter >= 10) {
-		ui8_1s_timer_counter = 0;
-
-		// calculate how many revolutions since last reset and convert to distance traveled
-		uint32_t ui32_temp = (rt_vars.ui32_wheel_speed_sensor_tick_counter
-				- rt_vars.ui32_wheel_speed_sensor_tick_counter_offset)
-				* ((uint32_t) rt_vars.ui16_wheel_perimeter) + ui32_remainder;
-
-		// if traveled distance is more than 100 meters update all distance variables and reset
-		if (ui32_temp >= 100000) { // 100000 -> 100000 mm -> 0.1 km
-			// update all distance variables
-			// ui_vars.ui16_distance_since_power_on_x10 += 1;
-			rt_vars.ui32_odometer_x10 += 1;
-			ui32_remainder = ui32_temp - 100000;
-
-			// reset the always incrementing value (up to motor controller power reset) by setting the offset to current value
-			rt_vars.ui32_wheel_speed_sensor_tick_counter_offset =
-					rt_vars.ui32_wheel_speed_sensor_tick_counter;
-		}
-	}
+  static uint32_t mm_x600_accumulator = 0;
+  mm_x600_accumulator += (uint32_t)g_bafang.wheel_rpm * rt_vars.ui16_wheel_perimeter;
+  while (mm_x600_accumulator >= 60000000u) {  // 100_000 mm × 600 = 100 m of travel
+    rt_vars.ui32_odometer_x10 += 1;
+    mm_x600_accumulator -= 60000000u;
+  }
 }
 
 uint8_t rt_first_time_management(void) {
@@ -557,7 +531,6 @@ void rt_processing(void)
 
   /************************************************************************************************/
   // now do all the calculations that must be done every 100ms
-  bafang_synth_wheel_ticks();   // feed the distance integrators (no tick counter on the wire)
   rt_low_pass_filter_battery_voltage_current_power();
   rt_calc_odometer();
   /************************************************************************************************/
