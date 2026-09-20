@@ -49,8 +49,13 @@
 // live on the phone/GPS/companion; the display doesn't need to track them.
 // Removed ui32_trip_a/b_distance_x1000, ui32_trip_a/b_time,
 // ui16_trip_a/b_max_speed_x10 EEPROM fields plus the "Trip" reset menu.
-#define EEPROM_MIN_COMPAT_VERSION 0x45
-#define EEPROM_VERSION 0x45
+// 0x46: added ui8_battery_voltage_option (index into a fixed 36/48/52 V
+// options table). Stock Bafang doesn't report pack voltage over UART
+// (bbs-fw does, via a READ_CALORIES hijack) — without it the display
+// power calc reads 0 W. New menu setting supplies a nominal voltage the
+// calc falls back to when the motor is silent about voltage.
+#define EEPROM_MIN_COMPAT_VERSION 0x46
+#define EEPROM_VERSION 0x46
 
 typedef struct eeprom_data {
 	uint8_t eeprom_version; // Used to detect changes in eeprom encoding, if != EEPROM_VERSION we will not use it
@@ -72,6 +77,8 @@ typedef struct eeprom_data {
 
   uint8_t ui8_ble_broadcast_enabled; // 0 = mute BLE telemetry notifications, 1 = broadcast
 
+  uint8_t ui8_battery_voltage_option; // index into battery_voltage_options_x10[]: 0=36V 1=48V 2=52V
+
 // FIXME align to 32 bit value by end of structure and pack other fields
 } eeprom_data_t;
 
@@ -91,6 +98,7 @@ typedef struct eeprom_data {
 #define DEFAULT_VALUE_LCD_BACKLIGHT_OFF_BRIGHTNESS                  20 // 20 = 100%
 #define DEFAULT_VALUE_ODOMETER_X10                                  0
 #define DEFAULT_STREET_MODE_SPEED_LIMIT                             25 // 25 km/h
+#define DEFAULT_VALUE_BATTERY_VOLTAGE_OPTION                        2 // index 2 = 52V (14S nominal, matches Molicel P42A pack)
 
 // *************************************************************************** //
 

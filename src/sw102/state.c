@@ -60,6 +60,10 @@ static uint16_t bafang_reply_timeout_ticks = 0;
 // render these as read-only diagnostics.
 struct bafang_state_t g_bafang = { 0 };
 
+// Nominal-voltage fallback options for the power calc, indexed by
+// ui8_battery_voltage_option. Values are × 10 (i.e. 480 = 48.0 V).
+const uint16_t battery_voltage_options_x10[] = { 360, 480, 520 };
+
 static void bafang_send_read(uint8_t opcode, uint8_t reply_len) {
     uint8_t *tx = uart_get_tx_buffer();
     tx[0] = BAFANG_CAT_READ;
@@ -368,6 +372,16 @@ void rt_low_pass_filter_battery_voltage_current_power(void) {
 
 	rt_vars.ui16_battery_voltage_filtered_x10 =
 			(((uint32_t) (ui32_battery_voltage_accumulated_x10000 >> BATTERY_VOLTAGE_FILTER_COEFFICIENT)) / 1000);
+
+	// Fallback when the motor isn't reporting voltage (stock Bafang firmware —
+	// bbs-fw hijacks READ_CALORIES to send voltage_x10; stock doesn't). Without
+	// this the power calc reads 0 W. The setting is a nominal value; if the motor
+	// starts reporting later (e.g. bbs-fw), the filter above takes over.
+	if (g_bafang.battery_voltage_x10 == 0) {
+		uint8_t opt = ui_vars.ui8_battery_voltage_option;
+		if (opt >= BATTERY_VOLTAGE_OPTIONS_LEN) opt = BATTERY_VOLTAGE_OPTIONS_LEN - 1;
+		rt_vars.ui16_battery_voltage_filtered_x10 = battery_voltage_options_x10[opt];
+	}
 
 	// low pass filter battery current
 	ui16_battery_current_accumulated_x5 -= ui16_battery_current_accumulated_x5

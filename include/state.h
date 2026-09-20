@@ -52,6 +52,7 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_time_field_enable;
 	uint8_t ui8_motor_power_option; // index into motor_power_options_w[]: 0=250W 1=500W 2=750W 3=1000W
 	uint8_t ui8_ble_broadcast_enabled; // 0 = mute BLE telemetry notifications, 1 = broadcast
+	uint8_t ui8_battery_voltage_option; // index into battery_voltage_options_x10[]: 0=36V 1=48V 2=52V
 	uint8_t ui8_walk_assist_feature_enabled;
 	uint8_t ui8_lcd_power_off_time_minutes;
 	uint8_t ui8_lcd_backlight_on_brightness;
@@ -116,6 +117,11 @@ struct bafang_state_t {
 // Keeping it non-volatile lets the menu system take a plain void* pointer
 // to any field via the PTRSIZE macro.
 extern struct bafang_state_t g_bafang;
+
+// Nominal-voltage fallback options for the power calc, indexed by
+// ui8_battery_voltage_option. Values are × 10 (480 = 48.0 V).
+extern const uint16_t battery_voltage_options_x10[];
+#define BATTERY_VOLTAGE_OPTIONS_LEN 3
 
 // Battery voltage (readed on motor controller):
 #define ADC_BATTERY_VOLTAGE_PER_ADC_STEP_X10000 866

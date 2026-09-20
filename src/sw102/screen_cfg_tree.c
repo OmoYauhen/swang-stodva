@@ -28,6 +28,14 @@ static const struct configtree_t cfgroot[] = {
 		{ "Power", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_motor_power_option), (const char*[]){ "250W", "500W", "750W", "1000W", 0 }}},
 		{},
 	}}},
+	// Fallback pack voltage for the on-screen watts calc. Bafang stock firmware
+	// doesn't report voltage over UART, so without this the power reads 0 W.
+	// bbs-fw hijacks READ_CALORIES to send real voltage — when that's live, the
+	// filter takes over and ignores this setting.
+	{ "Battery", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
+		{ "Voltage", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_battery_voltage_option), (const char*[]){ "36V", "48V", "52V", 0 }}},
+		{},
+	}}},
 	{ "Walk assist", F_BUTTON, .action = cfg_push_walk_assist_screen },
 	{ "BLE cast", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
 		{ "Enabled", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_ble_broadcast_enabled), off_on } },
