@@ -401,20 +401,16 @@ static void rt_calc_odometer(void) {
 
 // Metre-resolution session distance for wheel_perimeter calibration.
 // Runs at 10 Hz so short reference rides show a live per-metre readout instead
-// of waiting for the odometer's 100 m step. Uses its own tick delta so it stays
-// independent of the odometer's offset-reset accounting.
+// of waiting for the odometer's 100 m step. Same rpm×perimeter accumulator
+// pattern as rt_calc_odometer but with a 1 m threshold instead of 100 m, kept
+// as a sibling so odometer and session counter don't have to share bookkeeping.
 static void rt_calc_session_distance(void) {
-  static uint32_t last_tick;
-  static uint32_t mm_remainder;
-
-  uint32_t ticks_delta =
-      rt_vars.ui32_wheel_speed_sensor_tick_counter - last_tick;
-  last_tick = rt_vars.ui32_wheel_speed_sensor_tick_counter;
-
-  uint32_t mm =
-      ticks_delta * (uint32_t) rt_vars.ui16_wheel_perimeter + mm_remainder;
-  rt_vars.ui32_session_distance_m += mm / 1000;
-  mm_remainder = mm % 1000;
+  static uint32_t mm_x600_accumulator = 0;
+  mm_x600_accumulator += (uint32_t)g_bafang.wheel_rpm * rt_vars.ui16_wheel_perimeter;
+  while (mm_x600_accumulator >= 600000u) {  // 1_000 mm × 600 = 1 m of travel
+    rt_vars.ui32_session_distance_m += 1;
+    mm_x600_accumulator -= 600000u;
+  }
 }
 
 uint8_t rt_first_time_management(void) {
