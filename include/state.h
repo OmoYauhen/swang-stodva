@@ -25,6 +25,10 @@ typedef struct rt_vars_struct {
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint32_t ui32_odometer_x10;
+	// Session distance in metres. Not persisted; resets to 0 on every boot so
+	// the fine odometer screen can be used to calibrate wheel_perimeter against
+	// a short reference ride.
+	uint32_t ui32_session_distance_m;
 
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;
@@ -58,6 +62,7 @@ typedef struct ui_vars_struct {
 	uint8_t ui8_lcd_backlight_on_brightness;
 	uint8_t ui8_lcd_backlight_off_brightness;
 	uint32_t ui32_odometer_x10;
+	uint32_t ui32_session_distance_m;
 
 	uint8_t ui8_lights;
 	uint8_t ui8_braking;

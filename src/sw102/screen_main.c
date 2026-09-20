@@ -71,11 +71,13 @@ static void graph_paint(struct GraphData *gd, int x_left, int y_bot, int w, int 
 
 enum display_mode_t {
 	ModeOdometer,
+	ModeSessionDistance,
 	ModeMotorPower,
 	ModeLast,
 } display_mode;
 
 static struct GraphData * const mode_graph[] = {
+	NULL,
 	NULL,
 	&graph_motor_power,
 };
@@ -96,6 +98,10 @@ static void draw_2nd_field(ui_vars_t *ui, int y)
 	switch(display_mode) {
 	case ModeOdometer:
 		sprintf(buf, "%d km", ui_vars.ui32_odometer_x10/10);
+		break;
+
+	case ModeSessionDistance:
+		sprintf(buf, "%d m", (unsigned) ui_vars.ui32_session_distance_m);
 		break;
 
 	case ModeMotorPower:
