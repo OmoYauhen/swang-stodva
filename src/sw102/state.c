@@ -399,6 +399,24 @@ static void rt_calc_odometer(void) {
   }
 }
 
+// Metre-resolution session distance for wheel_perimeter calibration.
+// Runs at 10 Hz so short reference rides show a live per-metre readout instead
+// of waiting for the odometer's 100 m step. Uses its own tick delta so it stays
+// independent of the odometer's offset-reset accounting.
+static void rt_calc_session_distance(void) {
+  static uint32_t last_tick;
+  static uint32_t mm_remainder;
+
+  uint32_t ticks_delta =
+      rt_vars.ui32_wheel_speed_sensor_tick_counter - last_tick;
+  last_tick = rt_vars.ui32_wheel_speed_sensor_tick_counter;
+
+  uint32_t mm =
+      ticks_delta * (uint32_t) rt_vars.ui16_wheel_perimeter + mm_remainder;
+  rt_vars.ui32_session_distance_m += mm / 1000;
+  mm_remainder = mm % 1000;
+}
+
 uint8_t rt_first_time_management(void) {
   static uint32_t ui32_counter = 0;
 	static uint8_t ui8_motor_controller_init = 1;
@@ -457,6 +475,7 @@ void copy_rt_to_ui_vars(void) {
 	ui_vars.ui8_braking = rt_vars.ui8_braking;
 
 	ui_vars.ui32_odometer_x10 = rt_vars.ui32_odometer_x10;
+	ui_vars.ui32_session_distance_m = rt_vars.ui32_session_distance_m;
 
 	rt_vars.ui8_assist_level = ui_vars.ui8_assist_level;
 	rt_vars.ui8_lights = ui_vars.ui8_lights;
@@ -533,6 +552,7 @@ void rt_processing(void)
   // now do all the calculations that must be done every 100ms
   rt_low_pass_filter_battery_voltage_current_power();
   rt_calc_odometer();
+  rt_calc_session_distance();
   /************************************************************************************************/
   rt_first_time_management();
   bafang_apply_directs();
