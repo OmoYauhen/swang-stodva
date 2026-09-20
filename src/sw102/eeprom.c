@@ -39,6 +39,8 @@ const eeprom_data_t m_eeprom_data_defaults = {
   DEFAULT_VALUE_WALK_ASSIST_FEATURE_ENABLED,
 
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
+
+  .ui8_battery_voltage_option = DEFAULT_VALUE_BATTERY_VOLTAGE_OPTION,
 };
 
 void eeprom_init() {
@@ -102,6 +104,9 @@ void eeprom_init_variables(void) {
 
   ui_vars->ui8_street_mode_speed_limit =
       m_eeprom_data.ui8_street_mode_speed_limit;
+
+  ui_vars->ui8_battery_voltage_option =
+      m_eeprom_data.ui8_battery_voltage_option;
 }
 
 void eeprom_write_variables(void) {
@@ -129,6 +134,9 @@ void eeprom_write_variables(void) {
 
   m_eeprom_data.ui8_street_mode_speed_limit =
       ui_vars->ui8_street_mode_speed_limit;
+
+  m_eeprom_data.ui8_battery_voltage_option =
+      ui_vars->ui8_battery_voltage_option;
 
 	flash_write_words(&m_eeprom_data, sizeof(m_eeprom_data) / sizeof(uint32_t));
 }
