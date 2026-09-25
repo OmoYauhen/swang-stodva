@@ -21,7 +21,6 @@
 #include "rtc.h"
 #include "nrf_drv_wdt.h"
 #include "nrf_power.h"
-#include "timer.h"
 
 #include "ui.h"
 #include "gfx.h"
