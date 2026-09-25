@@ -17,7 +17,6 @@
 #include "buttons.h"
 #include "state.h"
 #include "adc.h"
-#include "timer.h"
 #include "lcd.h"
 #include <stdlib.h>
 
