@@ -12,19 +12,19 @@ fn main() {
 
     let firmware = [
         // shared / protocol / state
-        "src/sw102/utils.c",
-        "src/sw102/state.c",
-        "src/sw102/eeprom.c",
+        "src/utils.c",
+        "src/state.c",
+        "src/eeprom.c",
         // SW102 UI + framework
-        "src/sw102/rtc.c",
-        "src/sw102/gfx.c",
-        "src/sw102/ui.c",
-        "src/sw102/buttons.c",
-        "src/sw102/screen_boot.c",
-        "src/sw102/screen_main.c",
-        "src/sw102/screen_cfg.c",
-        "src/sw102/screen_cfg_utils.c",
-        "src/sw102/screen_cfg_tree.c",
+        "src/rtc.c",
+        "src/gfx.c",
+        "src/ui.c",
+        "src/buttons.c",
+        "src/screen_boot.c",
+        "src/screen_main.c",
+        "src/screen_cfg.c",
+        "src/screen_cfg_utils.c",
+        "src/screen_cfg_tree.c",
         // desktop HAL shims that are plain C already (reused verbatim)
         "src/emu/eeprom_hw.c",
         "src/emu/ble_services.c",
@@ -34,7 +34,7 @@ fn main() {
 
     let mut build = cc::Build::new();
     build
-        .include(root.join("include"))
+        .include(root.join("src"))
         .include(root.join("assets"))
         .define("BOARD_CUSTOM", None)
         .define("SW102", None)
@@ -63,7 +63,7 @@ fn main() {
         println!("cargo:rerun-if-changed=../{f}");
     }
     // rebuild when any included header or asset (e.g. *.xbm icons) changes
-    for dir in ["../include", "../assets"] {
+    for dir in ["../src", "../assets"] {
         println!("cargo:rerun-if-changed={dir}");
         if let Ok(entries) = std::fs::read_dir(dir) {
             for e in entries.flatten() {
