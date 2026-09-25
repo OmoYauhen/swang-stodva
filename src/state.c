@@ -11,12 +11,10 @@
 #include "stdio.h"
 #include "main.h"
 #include "utils.h"
-#include "rtc.h"
 #include "uart.h"
 #include "eeprom.h"
 #include "buttons.h"
 #include "state.h"
-#include "adc.h"
 #include "lcd.h"
 #include <stdlib.h>
 

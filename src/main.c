@@ -14,11 +14,9 @@
 #include "utils.h"
 #include "eeprom.h"
 #include "nrf_soc.h"
-#include "adc.h"
 #include "hardfault.h"
 #include "fault.h"
 #include "nrf_nvic.h"
-#include "rtc.h"
 #include "nrf_drv_wdt.h"
 #include "nrf_power.h"
 
@@ -43,6 +41,7 @@ Button buttonM, buttonDWN, buttonUP, buttonPWR;
 APP_TIMER_DEF(gui_timer_id); /* GUI updates counting timer. */
 #define GUI_INTERVAL APP_TIMER_TICKS(MSEC_PER_TICK, APP_TIMER_PRESCALER)
 volatile uint32_t gui_ticks;
+static uint32_t ui32_seconds_since_startup = 0;
 
 // assume we should until we init_softdevice()
 bool useSoftDevice = true;
@@ -176,7 +175,6 @@ int main(void)
   lcd_init();
   set_lcd_backlight();
   uart_init();
-  battery_voltage_init();
 
   init_app_timers(); // Must be before ble_init! because it sets app timer prescaler
 

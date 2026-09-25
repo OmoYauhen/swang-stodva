@@ -9,11 +9,6 @@ use std::sync::atomic::{AtomicI32, Ordering};
 
 static FD: AtomicI32 = AtomicI32::new(-1);
 
-extern "C" {
-    // defined in ../src/emu/adc.c; the firmware's battery-voltage source
-    static mut emu_voltage: u16;
-}
-
 /// Open the given motor port. Returns true on success.
 pub fn init(path: &str) -> bool {
     let c = match CString::new(path) {
@@ -26,9 +21,6 @@ pub fn init(path: &str) -> bool {
     }
     unsafe { configure(fd) };
     FD.store(fd, Ordering::SeqCst);
-    // The firmware defaults battery voltage to 50 (5.0 V) via adc.c; a real
-    // motor connection bumps it to a sane 48 V so the UI isn't nonsense.
-    unsafe { emu_voltage = 480 };
     true
 }
 

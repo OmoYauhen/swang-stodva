@@ -2,7 +2,7 @@
 // library that the Rust emulator links against and drives over FFI.
 //
 // The firmware (state, eeprom, gfx, ui, screens) is compiled unchanged; the
-// desktop HAL is provided by src/emu/{adc,button,eeprom_hw,ble_services}.c and
+// desktop HAL is provided by src/emu/{button,eeprom_hw,ble_services}.c and
 // the csrc/{hal,uart}.c shims in this crate.
 
 use std::path::Path;
@@ -16,7 +16,6 @@ fn main() {
         "src/state.c",
         "src/eeprom.c",
         // SW102 UI + framework
-        "src/rtc.c",
         "src/gfx.c",
         "src/ui.c",
         "src/buttons.c",
@@ -28,7 +27,6 @@ fn main() {
         // desktop HAL shims that are plain C already (reused verbatim)
         "src/emu/eeprom_hw.c",
         "src/emu/ble_services.c",
-        "src/emu/adc.c",
         "src/emu/button.c",
     ];
 
