@@ -55,7 +55,7 @@ static uint16_t bafang_reply_timeout_ticks = 0;
 #define BAFANG_REPLY_TIMEOUT_TICKS 5   // 5 x 100ms = 500 ms
 
 // Parsed live state, populated from motor replies. Struct definition
-// lives in include/state.h so the Technical config screen can
+// lives in src/state.h so the Technical config screen can
 // render these as read-only diagnostics.
 struct bafang_state_t g_bafang = { 0 };
 

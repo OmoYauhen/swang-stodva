@@ -48,26 +48,26 @@ OPENOCD := '$(OPENOCD_PATH)$(OPENOCD_BIN)' -f $(OPENOCD_PATH)../scripts/interfac
 
 # Source files common to all targets
 SRC_FILES += \
-  $(PROJ_DIR)/src/sw102/main.c \
-  $(PROJ_DIR)/src/sw102/lcd.c \
-  $(PROJ_DIR)/src/sw102/button.c \
-  $(PROJ_DIR)/src/sw102/ble_services.c \
-  $(PROJ_DIR)/src/sw102/adc.c \
-  $(PROJ_DIR)/src/sw102/eeprom_hw.c \
-  $(PROJ_DIR)/src/sw102/rtc.c \
-  $(PROJ_DIR)/src/sw102/gfx.c \
-  $(PROJ_DIR)/src/sw102/ui.c \
-  $(PROJ_DIR)/src/sw102/buttons.c \
-  $(PROJ_DIR)/src/sw102/screen_boot.c \
-  $(PROJ_DIR)/src/sw102/screen_main.c \
-  $(PROJ_DIR)/src/sw102/screen_cfg.c \
-  $(PROJ_DIR)/src/sw102/screen_cfg_utils.c \
-  $(PROJ_DIR)/src/sw102/screen_cfg_tree.c \
-  $(PROJ_DIR)/src/sw102/app_uart_fifo_mod.c \
-  $(PROJ_DIR)/src/sw102/uart.c \
-  $(PROJ_DIR)/src/sw102/utils.c \
-  $(PROJ_DIR)/src/sw102/state.c \
-  $(PROJ_DIR)/src/sw102/eeprom.c \
+  $(PROJ_DIR)/src/main.c \
+  $(PROJ_DIR)/src/lcd.c \
+  $(PROJ_DIR)/src/button.c \
+  $(PROJ_DIR)/src/ble_services.c \
+  $(PROJ_DIR)/src/adc.c \
+  $(PROJ_DIR)/src/eeprom_hw.c \
+  $(PROJ_DIR)/src/rtc.c \
+  $(PROJ_DIR)/src/gfx.c \
+  $(PROJ_DIR)/src/ui.c \
+  $(PROJ_DIR)/src/buttons.c \
+  $(PROJ_DIR)/src/screen_boot.c \
+  $(PROJ_DIR)/src/screen_main.c \
+  $(PROJ_DIR)/src/screen_cfg.c \
+  $(PROJ_DIR)/src/screen_cfg_utils.c \
+  $(PROJ_DIR)/src/screen_cfg_tree.c \
+  $(PROJ_DIR)/src/app_uart_fifo_mod.c \
+  $(PROJ_DIR)/src/uart.c \
+  $(PROJ_DIR)/src/utils.c \
+  $(PROJ_DIR)/src/state.c \
+  $(PROJ_DIR)/src/eeprom.c \
   $(SDK_ROOT)/components/libraries/util/app_error.c \
   $(SDK_ROOT)/components/libraries/util/app_error_weak.c \
   $(SDK_ROOT)/components/libraries/util/nrf_assert.c \
@@ -114,7 +114,7 @@ SRC_FILES += \
 # Include folders common to all targets
 INC_FOLDERS += \
   $(PROJ_DIR)/assets \
-  $(PROJ_DIR)/include \
+  $(PROJ_DIR)/src \
   $(SDK_ROOT)/components \
   $(SDK_ROOT)/components/boards \
   $(SDK_ROOT)/components/device \
@@ -346,7 +346,7 @@ generate_bootloader:
 	$(NRFUTIL) pkg generate --hw-version 51 --bootloader $(BOOTLOADER_HEX) --bootloader-version 1 --softdevice $(SOFT_DEVICE) --key-file $(KEYFILE) --sd-req 0x87 $(RELEASE_DIRECTORY)/sw102-otabootloader-$(VERSION_STRING).zip
 
 # Start CMSIS_Configuration_Wizard
-SDK_CONFIG_FILE := $(PROJ_DIR)/include/sdk_config.h
+SDK_CONFIG_FILE := $(PROJ_DIR)/src/sdk_config.h
 CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
