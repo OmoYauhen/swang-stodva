@@ -14,7 +14,6 @@
 #include "lcd.h"
 #include "button.h"
 #include "state.h"
-#include "rtc.h"      /* ui32_seconds_since_startup (defined in rtc.c) */
 
 /* ---- OLED framebuffer -----------------------------------------------------
  * 128*64/8 = 1024 bytes. The Rust renderer reads this directly each frame. */
@@ -45,6 +44,7 @@ void emu_set_button(int idx, bool pressed) {
 /* ---- Time base ------------------------------------------------------------ */
 #define MSEC_PER_TICK 20
 volatile uint32_t gui_ticks;
+uint32_t ui32_seconds_since_startup;
 
 uint32_t get_time_base_counter_1ms(void) { return gui_ticks * MSEC_PER_TICK; }
 uint32_t get_seconds(void)               { return ui32_seconds_since_startup; }
