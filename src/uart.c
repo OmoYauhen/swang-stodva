@@ -48,6 +48,7 @@ volatile uint8_t ui8_received_package_flag = 0;
 // primes this via uart_prime_rx() before sending each request.
 static volatile uint8_t ui8_expected_rx_len = 0;
 static volatile uint8_t ui8_rx_cnt = 0;
+static volatile uint32_t ui32_uart_err_count = 0;
 
 uint8_t* uart_get_tx_buffer(void)
 {
@@ -105,12 +106,23 @@ void uart_evt_callback(app_uart_evt_t * uart_evt)
       break;
 
     case APP_UART_COMMUNICATION_ERROR:
+      ui32_uart_err_count++;
       ui8_rx_cnt = 0;
       break;
 
     default:
       break;
   }
+}
+
+uint8_t uart_rx_partial_count(void)
+{
+  return ui8_rx_cnt;
+}
+
+uint32_t uart_get_error_count(void)
+{
+  return ui32_uart_err_count;
 }
 
 /**

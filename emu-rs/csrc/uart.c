@@ -31,6 +31,9 @@ void uart_prime_rx(uint8_t expected_len) {
     ui8_received_package_flag = 0;
 }
 
+uint8_t uart_rx_partial_count(void) { return ui8_rx_cnt; }
+uint32_t uart_get_error_count(void) { return 0; } /* host serial reports none */
+
 void uart_send_tx_buffer(uint8_t *tx_buffer, uint8_t ui8_len) {
     emu_serial_write(tx_buffer, ui8_len);
 }

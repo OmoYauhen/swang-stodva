@@ -46,6 +46,7 @@ static const struct {
     { 0x31, 2 },  // MOVING       (0x30 still / 0x31 moving, chk = same byte)
 };
 #define BAFANG_CYCLE_LEN (sizeof(bafang_read_cycle) / sizeof(bafang_read_cycle[0]))
+_Static_assert(BAFANG_CYCLE_LEN == BAFANG_READ_CYCLE_LEN, "update BAFANG_READ_CYCLE_LEN in state.h");
 
 static uint8_t bafang_cycle_pos = 0;
 static uint8_t bafang_awaiting_reply = 0;
@@ -504,6 +505,8 @@ void automatic_power_off_management(void) {
 }
 
 void communications(void) {
+  g_bafang.uart_err_count = uart_get_error_count();
+
   // ---- Bafang round-robin: consume any pending reply, then send next request.
   if (bafang_awaiting_reply) {
     const uint8_t *rx = uart_get_rx_buffer_rdy();
@@ -515,6 +518,8 @@ void communications(void) {
     } else if (++bafang_reply_timeout_ticks >= BAFANG_REPLY_TIMEOUT_TICKS) {
       // No reply within timeout — resync to next opcode.
       g_bafang.timeout_count++;
+      g_bafang.timeout_by_op[bafang_cycle_pos]++;
+      g_bafang.last_timeout_partial = uart_rx_partial_count();
       bafang_cycle_pos = (bafang_cycle_pos + 1) % BAFANG_CYCLE_LEN;
       bafang_awaiting_reply = 0;
       bafang_reply_timeout_ticks = 0;
