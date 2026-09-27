@@ -12,6 +12,11 @@ void uart_send_tx_buffer(uint8_t *tx_buffer, uint8_t ui8_len);
 // exposes them via uart_get_rx_buffer_rdy().
 void uart_prime_rx(uint8_t expected_len);
 
+// Diagnostics: bytes collected so far for the primed reply, and the running
+// count of UART line errors (framing / overrun / parity / break).
+uint8_t uart_rx_partial_count(void);
+uint32_t uart_get_error_count(void);
+
 #define UART_NUMBER_DATA_BYTES_TO_RECEIVE       29
 #define UART_NUMBER_DATA_BYTES_TO_SEND          88
 

@@ -99,6 +99,7 @@ extern uint8_t ui8_g_battery_soc;
 // Live-parsed Bafang display-protocol state, populated by bafang_parse_reply()
 // in state.c. Exposed here so the Technical config screen can render its
 // fields as read-only diagnostics.
+#define BAFANG_READ_CYCLE_LEN 8         // entries in state.c's bafang_read_cycle[]
 struct bafang_state_t {
     uint8_t  status;                // READ_STATUS (0x08)
     uint8_t  battery_pct;           // READ_BATTERY (0x11)
@@ -111,6 +112,9 @@ struct bafang_state_t {
     uint32_t rx_count;              // successful replies received (all opcodes)
     uint32_t chk_fail_count;        // per-opcode checksum failures
     uint32_t timeout_count;         // request → reply timeouts
+    uint16_t timeout_by_op[BAFANG_READ_CYCLE_LEN]; // timeouts per read-cycle slot
+    uint8_t  last_timeout_partial;  // bytes received before the last timeout (0 = silence)
+    uint32_t uart_err_count;        // UART framing/overrun/break errors (from uart.c)
 };
 // Not marked volatile: g_bafang is only ever read and written from main
 // context (bafang_parse_reply() is called from communications() which runs
