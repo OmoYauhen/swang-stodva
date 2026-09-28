@@ -16,7 +16,7 @@ pkgs.mkShell {
     rustc
     cargo
     gcc
-    python3
+    (python3.withPackages (p: [ p.pillow ])) # tools/ttf2font.py needs Pillow
     # on-target firmware (nRF51 / Cortex-M0)
     gnumake
     gcc-arm-embedded
