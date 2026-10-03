@@ -26,6 +26,8 @@ static const struct configtree_t cfgroot[] = {
 	}}},
 	{ "Motor", F_SUBMENU, .submenu = &(const struct scroller_config){ 20, 58, 36, 0, 128, (const struct configtree_t[]) {
 		{ "Power", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_motor_power_option), (const char*[]){ "250W", "500W", "750W", "1000W", 0 }}},
+		// Selects which READ opcodes get polled (see bafang_op_supported()).
+		{ "Firmware", F_OPTIONS, .options = &(const struct cfgoptions_t) { PTRSIZE(ui_vars.ui8_motor_firmware), (const char*[]){ "stock", "bbs-fw", 0 }}},
 		{},
 	}}},
 	// Fallback pack voltage for the on-screen watts calc. Bafang stock firmware

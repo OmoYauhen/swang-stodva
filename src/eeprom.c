@@ -41,6 +41,8 @@ const eeprom_data_t m_eeprom_data_defaults = {
   .ui8_street_mode_speed_limit = DEFAULT_STREET_MODE_SPEED_LIMIT,
 
   .ui8_battery_voltage_option = DEFAULT_VALUE_BATTERY_VOLTAGE_OPTION,
+
+  .ui8_motor_firmware = DEFAULT_VALUE_MOTOR_FIRMWARE,
 };
 
 void eeprom_init() {
@@ -61,6 +63,12 @@ void eeprom_init() {
 		// If we are using default data it doesn't get written to flash until someone calls write
 		memcpy(&m_eeprom_data, &m_eeprom_data_defaults,
 				sizeof(m_eeprom_data_defaults));
+
+	// 0x46 -> 0x47: ui8_motor_firmware is new; the bytes read for it are stale.
+	if (m_eeprom_data.eeprom_version < 0x47) {
+		m_eeprom_data.ui8_motor_firmware = m_eeprom_data_defaults.ui8_motor_firmware;
+		m_eeprom_data.eeprom_version = EEPROM_VERSION;
+	}
 
 //	// Perform whatever migrations we need to update old eeprom formats
 //	if (m_eeprom_data.eeprom_version < EEPROM_VERSION) {
@@ -107,6 +115,9 @@ void eeprom_init_variables(void) {
 
   ui_vars->ui8_battery_voltage_option =
       m_eeprom_data.ui8_battery_voltage_option;
+
+  ui_vars->ui8_motor_firmware =
+      m_eeprom_data.ui8_motor_firmware;
 }
 
 void eeprom_write_variables(void) {
@@ -137,6 +148,9 @@ void eeprom_write_variables(void) {
 
   m_eeprom_data.ui8_battery_voltage_option =
       ui_vars->ui8_battery_voltage_option;
+
+  m_eeprom_data.ui8_motor_firmware =
+      ui_vars->ui8_motor_firmware;
 
 	flash_write_words(&m_eeprom_data, sizeof(m_eeprom_data) / sizeof(uint32_t));
 }

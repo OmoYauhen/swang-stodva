@@ -222,8 +222,8 @@ static void bafang_parse_reply(uint8_t opcode, const uint8_t *rx) {
         // A dedicated brake flag reverse-engineered against a real (STOCK-firmware)
         // BBSHD with tools/brake_probe.py — the most direct signal. Note bbs-fw
         // does NOT implement this opcode (no reply), so on a bbs-fw-flashed motor
-        // this poll just times out and braking comes from STATUS 0x03 above; the
-        // cost is one ~500 ms reply-timeout per read cycle. Fine for stock motors.
+        // this poll would just time out — it's skipped when Firmware = bbs-fw,
+        // and braking comes from STATUS 0x03 above.
         g_bafang.braking = (rx[0] != 0);
         rt_vars.ui8_braking = g_bafang.braking;
         break;
@@ -504,15 +504,39 @@ void automatic_power_off_management(void) {
 	}
 }
 
+// Stock Bafang firmware never answers RANGE/CALORIES (they're bbs-fw hijacks);
+// bbs-fw never answers BRAKE. Skip whatever the selected firmware won't reply
+// to instead of eating a 500 ms timeout per round-robin cycle.
+static bool bafang_op_supported(uint8_t op) {
+  if (ui_vars.ui8_motor_firmware == MOTOR_FIRMWARE_BBSFW)
+    return op != 0x0F;
+  return op != 0x22 && op != 0x24;
+}
+
+static void bafang_advance_cycle(void) {
+  // STATUS is always supported, so this terminates.
+  do {
+    bafang_cycle_pos = (bafang_cycle_pos + 1) % BAFANG_CYCLE_LEN;
+  } while (!bafang_op_supported(bafang_read_cycle[bafang_cycle_pos].op));
+}
+
 void communications(void) {
   g_bafang.uart_err_count = uart_get_error_count();
+
+  if (ui_vars.ui8_motor_firmware != MOTOR_FIRMWARE_BBSFW) {
+    // No hijacked telemetry on stock. Drop anything left over from a bbs-fw
+    // session so the battery-voltage menu fallback takes over again.
+    g_bafang.battery_voltage_x10 = 0;
+    g_bafang.range_field = 0;
+    rt_vars.ui8_motor_temperature = 0;
+  }
 
   // ---- Bafang round-robin: consume any pending reply, then send next request.
   if (bafang_awaiting_reply) {
     const uint8_t *rx = uart_get_rx_buffer_rdy();
     if (rx) {
       bafang_parse_reply(bafang_read_cycle[bafang_cycle_pos].op, rx);
-      bafang_cycle_pos = (bafang_cycle_pos + 1) % BAFANG_CYCLE_LEN;
+      bafang_advance_cycle();
       bafang_awaiting_reply = 0;
       bafang_reply_timeout_ticks = 0;
     } else if (++bafang_reply_timeout_ticks >= BAFANG_REPLY_TIMEOUT_TICKS) {
@@ -520,7 +544,7 @@ void communications(void) {
       g_bafang.timeout_count++;
       g_bafang.timeout_by_op[bafang_cycle_pos]++;
       g_bafang.last_timeout_partial = uart_rx_partial_count();
-      bafang_cycle_pos = (bafang_cycle_pos + 1) % BAFANG_CYCLE_LEN;
+      bafang_advance_cycle();
       bafang_awaiting_reply = 0;
       bafang_reply_timeout_ticks = 0;
     }
@@ -533,6 +557,10 @@ void communications(void) {
     // round-robin left off on the next tick.
     if (bafang_try_send_pending_write())
       return;
+
+    // Firmware setting may have changed since we last advanced.
+    if (!bafang_op_supported(bafang_read_cycle[bafang_cycle_pos].op))
+      bafang_advance_cycle();
 
     bafang_send_read(
         bafang_read_cycle[bafang_cycle_pos].op,
