@@ -15,7 +15,14 @@ static bool do_set_odometer(const struct configtree_t *ign, int wh);
 
 static const char *off_on[] = { "off", "on", 0 };
 
+#ifdef HW_PROBE
+extern const struct scroller_config cfg_hw_probe;
+#endif
+
 static const struct configtree_t cfgroot[] = {
+#ifdef HW_PROBE
+	{ "HW probe", F_SUBMENU, .submenu = &cfg_hw_probe },
+#endif
 	{ "PAS levels", F_BUTTON, .action = cfg_push_assist_screen },
 	// Wrap top-level numeric/options entries in single-item submenus so their edit
 	// view inherits winh=36 (roomy) instead of cfg_root's compact winh=18 — which

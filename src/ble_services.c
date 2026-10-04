@@ -7,6 +7,9 @@
 #include "common.h"
 #include "fstorage.h"
 #include "ble_services.h"
+#ifdef HW_PROBE
+#include "hw_probe.h"
+#endif
 #include "ble_hci.h"
 #include "ble_advdata.h"
 #include "ble_conn_params.h"
@@ -739,7 +742,11 @@ static void ble_stack_init(void)
     ble_enable_params.gatt_enable_params.att_mtu = NRF_BLE_MAX_MTU_SIZE;
 #endif
 //    ble_enable_params.gatts_enable_params.service_changed = IS_SRVC_CHANGED_CHARACT_PRESENT;
+#ifdef HW_PROBE
+    APP_ERROR_CHECK(hw_probe_softdevice_enable(&ble_enable_params));
+#else
     APP_ERROR_CHECK(softdevice_enable(&ble_enable_params));
+#endif
 
     // Subscribe for BLE events.
     APP_ERROR_CHECK(softdevice_ble_evt_handler_set(ble_evt_dispatch));

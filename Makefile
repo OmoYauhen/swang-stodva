@@ -213,6 +213,17 @@ LIB_FILES += \
 
 include version.mk
 
+# Hardware probe build: `make HW_PROBE=1 VERSION_NUM=<yymmddnn> ...` adds the
+# "HW probe" diagnostics menu (docs/hw-probe.md). VERSION_NUM must be given on
+# the command line — the device's DFU downgrade gate is above version.mk's value.
+ifeq ($(HW_PROBE),1)
+ifneq ($(origin VERSION_NUM),command line)
+$(error HW_PROBE=1 needs VERSION_NUM=<date-based number> on the command line)
+endif
+CFLAGS += -DHW_PROBE -DVERSION_NUM=$(VERSION_NUM)
+SRC_FILES += $(PROJ_DIR)/src/hw_probe.c
+endif
+
 # C flags common to all targets
 CFLAGS += $(OPT)
 CFLAGS += -DBOARD_CUSTOM -DSW102

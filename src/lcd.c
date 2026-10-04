@@ -17,6 +17,9 @@
 #include "common.h"
 #include "nrf_delay.h"
 #include "nrf_drv_spi.h"
+#ifdef HW_PROBE
+#include "hw_probe.h"
+#endif
 
 
 /* Function prototype */
@@ -115,6 +118,9 @@ static int oldBacklight = -1;
  */
 void lcd_refresh(void)
 {
+#ifdef HW_PROBE
+  uint32_t probe_t0 = hw_probe_now_us();
+#endif
   if(lcdBacklight != oldBacklight) {
     oldBacklight = lcdBacklight;
 
@@ -137,7 +143,17 @@ void lcd_refresh(void)
     set_data();
     APP_ERROR_CHECK(nrf_drv_spi_transfer(&spi, framebuffer.u8+(128/8)*i, 128/8, NULL, 0));
   }
+#ifdef HW_PROBE
+  hw_probe_lcd_flush_done(probe_t0);
+#endif
 }
+
+#ifdef HW_PROBE
+void lcd_send_cmds(const uint8_t *cmds, uint32_t n)
+{
+  send_cmd(cmds, n);
+}
+#endif
 
 /**
  * @brief SPI driver initialization.
