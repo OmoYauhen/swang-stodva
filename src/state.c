@@ -17,6 +17,10 @@
 #include "state.h"
 #include "lcd.h"
 #include <stdlib.h>
+#ifdef HW_PROBE
+#include <string.h>
+#include "hw_probe.h"
+#endif
 
 uint8_t ui8_g_battery_soc;
 volatile uint8_t ui8_g_motorVariablesStabilized = 0;
@@ -159,7 +163,30 @@ static uint8_t bafang_desired_pas_code(void) {
 // case the caller should skip its READ for this tick to avoid overlap).
 // Requires that we've received at least one reply — no point talking to a
 // motor that isn't there yet.
+#ifdef HW_PROBE
+// One raw frame queued from a probe page (main context), sent from the
+// communications() IRQ ahead of normal writes. len is written last.
+static uint8_t probe_raw_tx[8];
+static volatile uint8_t probe_raw_len;
+
+bool bafang_probe_queue_raw(const uint8_t *bytes, uint8_t len) {
+    if (probe_raw_len || len == 0 || len > sizeof(probe_raw_tx)) return false;
+    memcpy(probe_raw_tx, bytes, len);
+    probe_raw_len = len;
+    return true;
+}
+#endif
+
 static bool bafang_try_send_pending_write(void) {
+#ifdef HW_PROBE
+    if (probe_raw_len) {
+        uint8_t *tx = uart_get_tx_buffer();
+        memcpy(tx, probe_raw_tx, probe_raw_len);
+        uart_send_tx_buffer(tx, probe_raw_len);
+        probe_raw_len = 0;
+        return true;
+    }
+#endif
     if (g_bafang.rx_count == 0) return false;
 
     uint8_t desired_pas = bafang_desired_pas_code();
@@ -535,6 +562,10 @@ void communications(void) {
   if (bafang_awaiting_reply) {
     const uint8_t *rx = uart_get_rx_buffer_rdy();
     if (rx) {
+#ifdef HW_PROBE
+      hw_probe_motor_rx(bafang_cycle_pos, bafang_read_cycle[bafang_cycle_pos].op, rx,
+                        bafang_read_cycle[bafang_cycle_pos].reply_len);
+#endif
       bafang_parse_reply(bafang_read_cycle[bafang_cycle_pos].op, rx);
       bafang_advance_cycle();
       bafang_awaiting_reply = 0;

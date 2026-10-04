@@ -22,6 +22,9 @@
 
 #include "ui.h"
 #include "gfx.h"
+#ifdef HW_PROBE
+#include "hw_probe.h"
+#endif
 extern const struct screen screen_boot;
 
 /* Variable definition */
@@ -169,6 +172,9 @@ void init_softdevice() {
  */
 int main(void)
 {
+#ifdef HW_PROBE
+  hw_probe_early_init(); // before anything can touch GPREGRET
+#endif
   init_softdevice();
   gpio_init();
   system_power(true);
@@ -215,7 +221,13 @@ int main(void)
           APP_ERROR_HANDLER(FAULT_STACKOVERFLOW);
       }
 
+#ifdef HW_PROBE
+      hw_probe_frame_begin();
+#endif
       ui_update();
+#ifdef HW_PROBE
+      hw_probe_frame_end(ticksmissed);
+#endif
     }
 
     if(useSoftDevice)
